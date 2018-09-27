@@ -1,4 +1,3 @@
-
 (define-module (Flax reader)
   #:use-module (Flax utils)
   
@@ -55,3 +54,9 @@
                   (let ((contents (load (get-absolute-path file-name))))
                     (values (alist-delete 'content contents eq?) ;; return the metadata list
                             (assq-ref contents 'content))))))    ;; return the list
+
+;; need to complete
+(define html-reader
+  (make-reader (make-file-extension-matcher "html")
+	       (lambda ()
+		 (format #t "Not prepare!!"))))

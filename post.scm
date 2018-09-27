@@ -30,10 +30,16 @@
   (metadata get-post-metadata)
   (sxml get-post-sxml set-post-sxml))
 
-;; read one post and return  post object
-(define (read-post file-name)
-  (let-values (((meta-data content) ((get-reader-proc sxml-reader) file-name)))
-    (make-post (basename file-name) meta-data content)))
+;; read one post and return post object
+(define* (read-post file-name #:key (reader-list (list sxml-reader)))
+  (if (eq? reader-list '())
+      (begin
+       (format (current-error-port) "Unmatched file : ~a ~%" file-name)
+       '())
+      (if ((get-reader-matcher (car reader-list)) file-name)
+	  (let-values (((meta-data content) ((get-reader-proc (car reader-list)) file-name)))
+	    (make-post (basename file-name) meta-data content))
+	  (read-post file-name #:reader-list (cdr reader-list)))))
 
 (define (post-ref post key)
   (assq-ref (get-post-metadata post) key))

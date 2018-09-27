@@ -1,4 +1,3 @@
-;; TODO : unfinished file
 (define-module (Flax command build)
   #:use-module (Flax site)
   #:use-module (Flax utils)
@@ -6,15 +5,15 @@
   #:use-module (ice-9 r5rs)
   #:use-module (ice-9 match)
   
-  #:export (show-help
+  #:export (show-build-help
 	    build))
 
-;; not complete
-(define (show-help)
-  (format #t "Useage:~%")
-  (format #t "1.~%"))
+;; display the build command usage
+(define (show-build-help)
+  (format #t "Useage: flax build <ConfigFileName> ~%")
+  (format #t "If the <ConfigFileName> is not provided, use \"config.scm\" instead. ~%"))
 
-;; 
+;; the build command which is invoked by the ui
 (define* (build #:key (config-file "config.scm"))
   (if (file-exists? (get-absolute-path config-file))
       (let ((obj (config-load config-file)))

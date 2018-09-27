@@ -34,7 +34,7 @@
   (posts-directory get-site-postdirectory)
   ;; the object directory where the builded page is sended to
   (build-directory get-site-build-directory)
-  ;; transfer the post file to the proper sxmltree which is needed by page
+  ;; transfer the post file to the post
   (readers get-site-readers))
 
 
@@ -45,7 +45,7 @@
 	       (asset (make-asset "assets" "BlogSite"))
 	       ;; the process field contains an assoc list
 	       (process-layer default-process-layer)
-               (readers '(sxml-reader html-reader)))
+               (readers (list sxml-reader)))
   (make-site asset
 	     process-layer
 	     posts-directory
@@ -53,7 +53,7 @@
 	     readers))
 
 ;; write the content to the disk
-(define* (write-content posts-directory prefix-directory #:optional process-layer)
+(define* (write-content posts-directory prefix-directory #:optional process-layer reader-list)
   (let* ((file-tree-list (get-file-tree-list posts-directory)))
     (if (pair? file-tree-list)
 	(begin
@@ -74,9 +74,11 @@
 		    (begin
 		      (if (not (file-exists? prefix-directory))
 			  (mkdir-p prefix-directory))
-		      (page (read-post (string-append posts-directory "/" (car file-tree-list)))
-			    prefix-directory
-			    process-layer))))
+		      (let* ((file-name (string-append posts-directory "/" (car file-tree-list)))
+			     (temp-post (read-post file-name #:reader-list reader-list)))
+			(if (not (eq? temp-post '()))
+			    (page temp-post prefix-directory process-layer)
+			    (format (current-error-port) "File ~a is unrecognized. Jump over! ~%" file-name))))))
 	    ;; update the list, and process the rest list elements
 	    (set! file-tree-list (cdr file-tree-list))))
 	(if (is-directory? file-tree-list)
@@ -87,9 +89,11 @@
 		  (if (not (is-directory? prefix-directory))
 		      (format (current-error-port) "When building pages. find there exists conflict files!! ~%Whose name is \"~a\".~%~%" prefix-directory))
 		  (mkdir-p prefix-directory))
-	      (page (read-post file-tree-list)
-		    prefix-directory
-		    process-layer))))))
+	      (let* ((file-name file-tree-list)
+		     (temp-post (read-post file-name #:reader-list reader-list)))
+		(if (not (eq? temp-post '()))
+		    (page temp-post prefix-directory process-layer)
+		    (format (current-error-port) "File ~a is unrecognized. Jump over! ~%~%" file-name))))))))
 
 ;; This procedure will not be deleted!! Just develop it!
 ;; get the site object and build the site
@@ -97,7 +101,8 @@
   (let ((posts-directory (get-site-postdirectory obj))
 	(build-directory (get-site-build-directory obj))
 	(assets-obj (get-site-asset obj))
-	(process-layer (get-site-process-layer obj)))
+	(process-layer (get-site-process-layer obj))
+	(reader-list (get-site-readers obj)))
     ;; cp the asset src file
     (if (pair? assets-obj)
 	(while (not (eq? '() assets-obj))
@@ -113,5 +118,5 @@
 		(cp-asset assets-obj)
 		(format #t "Install source file successfully!~%"))))
     ;; read the post and build the page and write them to the disk 
-    (write-content posts-directory build-directory process-layer))
+    (write-content posts-directory build-directory process-layer reader-list))
   (format #t "Building successful!!~%"))

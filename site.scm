@@ -7,7 +7,7 @@
     #:use-module (Flax utils)
 
     #:use-module (srfi srfi-9)
-    
+        
     #:export (make-site
               is-site?
               get-site-postdirectory
@@ -53,47 +53,49 @@
 	     readers))
 
 ;; write the content to the disk
-(define* (write-content posts-directory prefix-directory #:optional process-layer reader-list)
-  (let* ((file-tree-list (get-file-tree-list posts-directory)))
-    (if (pair? file-tree-list)
-	(begin
-	  (set! file-tree-list (cdr file-tree-list))
-	  (while (not (eq? '() file-tree-list))
-	    (if (list? (car file-tree-list))
-		;; the element is directory which contains at least one file , the file may be a directory too!
-		(let ((prefix-directory* (string-append prefix-directory "/" (caar file-tree-list)))
-		      (posts-directory* (string-append posts-directory "/" (caar file-tree-list))))
-		  (mkdir-p prefix-directory)
-		  (write-content posts-directory*
-				 prefix-directory*
-				 process-layer))
-		;; the element is a file
-		(if (is-directory? (string-append posts-directory "/" (car file-tree-list)))
-		    ;; no matter whether the directory contains file, create it
-		    (mkdir-p (string-append prefix-directory "/" (car file-tree-list)))
-		    (begin
-		      (if (not (file-exists? prefix-directory))
-			  (mkdir-p prefix-directory))
-		      (let* ((file-name (string-append posts-directory "/" (car file-tree-list)))
-			     (temp-post (read-post file-name #:reader-list reader-list)))
-			(if (not (eq? temp-post '()))
-			    (page temp-post prefix-directory process-layer)
-			    (format (current-error-port) "File ~a is unrecognized. Jump over! ~%" file-name))))))
-	    ;; update the list, and process the rest list elements
-	    (set! file-tree-list (cdr file-tree-list))))
-	(if (is-directory? file-tree-list)
-	    ;; no matter whether the directory contains file, create it
-	    (mkdir-p (string-append prefix-directory "/" file-tree-list))
-	    (begin
-	      (if (file-exists? prefix-directory)
-		  (if (not (is-directory? prefix-directory))
-		      (format (current-error-port) "When building pages. find there exists conflict files!! ~%Whose name is \"~a\".~%~%" prefix-directory))
-		  (mkdir-p prefix-directory))
-	      (let* ((file-name file-tree-list)
-		     (temp-post (read-post file-name #:reader-list reader-list)))
-		(if (not (eq? temp-post '()))
-		    (page temp-post prefix-directory process-layer)
-		    (format (current-error-port) "File ~a is unrecognized. Jump over! ~%~%" file-name))))))))
+(define* (write-content posts-file-tree prefix-directory
+			#:key (flag #f) (environment (getcwd)) (reader-list (list sxml-reader)) (process-layer default-process-layer))
+  (if (string? posts-file-tree)
+      ;; initilaize the file tree, if flag is #t, onle executed once in this procedure!!
+      (if flag
+	  (let* ((file-tree (get-file-tree-list posts-file-tree))
+		 (environment* (string-append environment "/" (car file-tree))))
+	    (write-content (cdr file-tree) prefix-directory
+			   #:environment environment*
+			   #:reader-list reader-list
+			   #:process-layer process-layer))
+	  ;;if flag is #f, it is a single element from the file tree list
+	  (if (is-directory? (string-append environment "/" posts-file-tree))
+	      ;; if the file is a directory, create it 
+	      (mkdir-p (string-append prefix-directory "/" posts-file-tree))
+	      ;; if not, write the page
+	      (let ((post (read-post (string-append environment "/" posts-file-tree)
+				     #:reader-list reader-list)))
+		(if (not (eq? post '()))
+		    (page post prefix-directory process-layer)
+		    (format (current-error-port) "Warning! Unrecognized file: ~a ~%" posts-file-tree)))))
+      ;; if it is a file list
+      (if (pair? posts-file-tree)
+	  (let ((prefix-directory* (if flag
+				       (string-append prefix-directory "/" (car posts-file-tree))
+				       prefix-directory))
+		(environment* (if flag
+				  (string-append environment "/" (car posts-file-tree))
+				  environment))
+		(file-tree (if flag
+			       (cdr posts-file-tree)
+			       posts-file-tree)))
+	    (write-content (car file-tree) prefix-directory*
+			   #:flag (if (pair? (car file-tree))
+				      #t
+				      #f)
+			   #:environment environment*
+			   #:reader-list reader-list
+			   #:process-layer process-layer)
+	    (write-content (cdr file-tree) prefix-directory*
+			   #:environment environment*
+			   #:reader-list reader-list
+			   #:process-layer process-layer)))))
 
 ;; This procedure will not be deleted!! Just develop it!
 ;; get the site object and build the site
@@ -118,5 +120,8 @@
 		(cp-asset assets-obj)
 		(format #t "Install source file successfully!~%"))))
     ;; read the post and build the page and write them to the disk 
-    (write-content posts-directory build-directory process-layer reader-list))
+    (write-content posts-directory build-directory
+		   #:flag #t
+		   #:reader-list reader-list
+		   #:process-layer process-layer))
   (format #t "Building successful!!~%"))

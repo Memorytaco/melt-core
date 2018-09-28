@@ -9,13 +9,24 @@
 	    get-processor
 	    set-processor
 
-	    default-process-layer))
+	    default-process-layer
+	    process-ref
+	    processor-ref))
 
 (define-record-type <process>
   (make-process key processor)
   is-process?
   (key get-process-key set-process-key)  ;; you'd better set the key as symbol
   (processor get-processor set-processor)) ;; the processor is a procedure which process the sxml tree
+
+;; return the process from the process-layer otherwise
+;; return '()
+(define (process-ref process-layer key)
+  (assq-ref process-layer key))
+
+;; return the processor of one process in process-layer
+(define (processor-ref process-layer key)
+  (get-processor (process-ref process-layer key)))
 
 (define default-meta-process
   (make-process 'meta

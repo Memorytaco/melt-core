@@ -17,8 +17,8 @@
             get-reader-proc
             is-reader-available?
 
-            make-file-extension-matcher
-            sxml-reader))
+            sxml-reader
+	    make-file-extension-matcher))
 
 
 ;; ~matcher~ is a function to judge whether the file is supported
@@ -30,6 +30,7 @@
   (matcher get-reader-matcher set-reader-matcher-as)
   (proc get-reader-proc))
 
+;; make file extension matcher
 ;; return the function which returns #t if the file is
 ;; end with ".~ext~"
 (define (make-file-extension-matcher ext)
@@ -37,6 +38,7 @@
   (let ((regexp (make-regexp (string-append "\\." ext "$"))))
     (lambda (file-name)
       (regexp-match? (regexp-exec regexp file-name)))))
+
 
 
 ;; return #t if the ~file-name~ is supported by ~reader~

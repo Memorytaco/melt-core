@@ -13,11 +13,14 @@
 	    process-ref
 	    processor-ref))
 
+
+;; defien the record of <process>
 (define-record-type <process>
   (make-process key processor)
   is-process?
   (key get-process-key set-process-key)  ;; you'd better set the key as symbol
   (processor get-processor set-processor)) ;; the processor is a procedure which process the sxml tree
+
 
 ;; return the process from the process-layer otherwise
 ;; return '()
@@ -28,6 +31,12 @@
 (define (processor-ref process-layer key)
   (get-processor (process-ref process-layer key)))
 
+
+;; read each post, genereate an alist of post path
+(define (Hello)
+  (format #t "This is not done!!~%"))
+
+;; ---------------------------the default process layer------------------------------------------------
 (define default-meta-process
   (make-process 'meta
 		(lambda* (#:key process-layer process-object)
@@ -75,7 +84,7 @@
 ;; date if none output "today" -- date is a string
 ;; img if none don't display the image -- img is a src string
 ;; tag if none output "none" -- tag is a !!string list!!
-;; content -- must have! otherwise you will get one post with out content 
+;; content -- must have! otherwise you will get one post without content 
 (define default-process-layer
   `((meta . ,default-meta-process)
     (index . ,default-index-process)

@@ -108,17 +108,21 @@
     ;; cp the asset src file
     (if (pair? assets-obj)
 	(while (not (eq? '() assets-obj))
-	  (if (file-exists? (get-asset-target (car assets-obj)))
-	      (format (current-error-port) "Warning!! There already exists one \"~a\"!~%" (get-asset-target (car assets-obj)))
+	  (begin
+	    (if (file-exists? (get-asset-target (car assets-obj)))
+		(begin
+		  (format (current-error-port) "Warning!! There already exists one \"~a\"!~%" (get-asset-target (car assets-obj)))
+		  (format (current-error-port) "This is a warning, If you know what happened, just ignored.~%")))
+	    (cp-asset (car assets-obj)))
+	  (set! assets-obj (cdr assets-obj))
+	  (format #t "Install source file successfully!~%"))
+	(begin
+	  (if (file-exists? (get-asset-target assets-obj))
 	      (begin
-		(cp-asset (car assets-obj))
-		(format #t "Install source file successfully!~%")))
-	  (set! assets-obj (cdr assets-obj)))
-	(if (file-exists? (get-asset-target assets-obj))
-	      (format (current-error-port) "Warning!! There already exists one \"~a\"!~%" (get-asset-target assets-obj))
-	      (begin
-		(cp-asset assets-obj)
-		(format #t "Install source file successfully!~%"))))
+		(format (current-error-port) "Warning!! There already exists one \"~a\"!~%" (get-asset-target assets-obj))
+		(format (current-error-port) "This is a warning, If you know what happened, just ignored~%")))
+	  (cp-asset assets-obj)
+	  (format #t "Install source file successfully!~%")))
     ;; read the post and build the page and write them to the disk 
     (write-content posts-directory build-directory
 		   #:flag #t

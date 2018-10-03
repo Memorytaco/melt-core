@@ -18,9 +18,7 @@
   (if (file-exists? (get-absolute-path config-file))
       (let ((obj (config-load config-file)))
 	(if (is-site? obj)
-	    (begin
-	      (build-site obj)
-	      (format #t "~%!!Done!!~%"))
+	    (build-site obj)
 	    (format (current-error-port) "Didn't receive site object !~%Last config expression must be site ~%")))
       (begin
 	(format #t "Coundn't find config file !! ~%expect ~a but got nothing !~%" (basename config-file)))))

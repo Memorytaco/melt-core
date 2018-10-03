@@ -20,7 +20,7 @@
 			    (cdr file-tree)
 			    file-tree)))
 	(append (if (pair? (car file-tree*))
-		    (navigate (car file-tree)
+		    (navigate (car file-tree*)
 			      action
 			      #:flag #t
 			      #:environment environment*)

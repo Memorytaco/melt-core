@@ -23,12 +23,13 @@
 ;; -- the third number is the branch version number. Every bug fix or feature
 ;;    added or some procedure updated will update the number.
 (define (show-version)
-  (format #t "Flax version 0.0.3 ~%"))
+  (format #t "Flax version 0.0.4 ~%"))
 
 (define --version-history--
   '("Flax 0.0.1 ---  complete the basic functions, split the process procedure out ~%"
     "Flax 0.0.2 ---  refine the site procedure, refine the page procedure adding file extension support ~%"
-    "Flax 0.0.3 ---  refine the write-content procedure, let the logic be better understood!! ~%"))
+    "Flax 0.0.3 ---  refine the write-content procedure, let the logic be better understood!! ~%"
+    "Flax 0.0.4 ---  add markdown support and fix some bugs! ~%"))
 
 ;; the basic information
 (define (show-flax)

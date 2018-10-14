@@ -1,23 +1,23 @@
 (define-module (Flax site)
-    #:use-module (Flax reader)
-    #:use-module (Flax page)
-    #:use-module (Flax post)
-    #:use-module (Flax asset)
-    #:use-module (Flax process)
-    #:use-module (Flax utils)
-
-    #:use-module (srfi srfi-9)
-        
-    #:export (make-site
-              is-site?
-              get-site-postdirectory
-              get-site-build-directory
-              get-site-readers
-              get-site-process-layer
-	      set-site-process-layer
-	      
-	      build-site
-	      site))
+  #:use-module (Flax reader)
+  #:use-module (Flax page)
+  #:use-module (Flax post)
+  #:use-module (Flax asset)
+  #:use-module (Flax process)
+  #:use-module (Flax utils)
+  
+  #:use-module (srfi srfi-9)
+  
+  #:export (make-site
+            is-site?
+            get-site-postdirectory
+            get-site-build-directory
+            get-site-readers
+            get-site-process-layer
+	    set-site-process-layer
+	    
+	    build-site
+	    site))
 
 ;; ~title~ is a string
 ;; ~domain~ is a string
@@ -45,7 +45,7 @@
 	       (asset (make-asset "assets" "BlogSite"))
 	       ;; the process field contains an assoc list
 	       (process-layer default-process-layer)
-               (readers (list sxml-reader)))
+               (readers default-reader-list))
   (make-site asset
 	     process-layer
 	     posts-directory
@@ -54,7 +54,7 @@
 
 ;; write the content to the disk
 (define* (write-content posts-file-tree prefix-directory
-			#:key (flag #f) (environment (getcwd)) (reader-list (list sxml-reader)) (process-layer default-process-layer))
+			#:key (flag #f) (environment (getcwd)) (reader-list default-reader-list) (process-layer default-process-layer))
   (if (string? posts-file-tree)
       ;; initilaize the file tree, if flag is #t, onle executed once in this procedure!!
       (if flag

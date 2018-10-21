@@ -32,11 +32,18 @@
   (get-processor (process-ref process-layer key)))
 
 
-;; read each post, genereate an alist of post path
+;; read each post, genereate an alist of post path , not completed!!!!!!!!!!!!!!
 (define (Hello)
   (format #t "This is not done!!~%"))
 
 ;; ---------------------------the default process layer------------------------------------------------
+;; this template require these keywords in post
+;; img    -- the preview image path, from the index file to that image, pure String
+;; title  -- the title of the post, pure String
+;; author -- Your name, pure String
+;; date   -- the date the post posted, Pure String
+;; tag    -- The type of the post, Pure String
+;; this will show later in the end of the file
 (define default-meta-process
   (make-process 'meta
 		(lambda* (#:key process-layer process-object)

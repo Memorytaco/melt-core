@@ -76,10 +76,4 @@
 		     (values (read-metadata-headers port)
 			     (commonmark->sxml port)))))))
 
-;; need to complete
-(define html-reader
-  (make-reader (make-file-extension-matcher "html")
-	       (lambda ()
-		 (format #t "Not prepare!!"))))
-
 (define default-reader-list (list sxml-reader commonmark-reader))

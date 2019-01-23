@@ -2,6 +2,7 @@
          (export get-absolute-path
                  decompose-path-name
                  compose-path-name
+                 while
                  mkdir-p)
          (import (scheme)
                  (Flax structure))

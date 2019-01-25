@@ -10,8 +10,8 @@
          ;; library body  ---------------
          (import type-site)
 
+
          ;; return the absolute path of the file
-         ;; TODO : need to do better
          (define (get-absolute-path file-name)
            (if (string? file-name)
                (if (path-absolute? file-name)

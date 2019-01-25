@@ -1,28 +1,27 @@
-(library (Flax syntax match)
+(library (Flax srfi match-simple)
          (export match)
          (import (scheme))
 
          (define-syntax match
            (syntax-rules ()
-             [(_ expression (pattern . body) ...)
-              (match-gen-labels expression start () (pattern . body) ...)]))
+             ((match expr (pat . body) ...)
+              (match-gen-labels expr start () (pat . body) ...))))
 
          (define-syntax match-gen-labels
            (syntax-rules (=>)
-             [(_ expression label ((k1 fk1 pattern1 . body1) (k fk pattern . body) ...))
-              (let ((var expression))
-                (letrec ((k (lambda ()
-                              (match-one var pattern (begin . body) (fk))))
-                         ...
-                         (label (lambda () (error var "no matches"))))
-                  (match-one var pattern1 (begin . body1) (fk1))))]
-             [(_ expression label (labels ...) (pattern (=> fk) . body) . rest)
-              (match-gen-labels expression fk (labels ... (label fk pattern . body)) . rest)]
-             [(_ expression label (labels ...) (pattern . body) . rest)
-              (match-gen-labels expression fail (labels ... (label fail pattern . body)) . rest)]))
+             ((_ expr label ((k1 fk1 pat1 . body1) (k fk pat . body) ...))
+              (let ((tmp expr))
+               (letrec ((k (lambda () (match-one tmp pat (begin . body) (fk)))) ...
+                                                                                (label (lambda () (error "no matches" tmp))))
+                 (match-one tmp pat1 (begin . body1) (fk1)))))
+             ((_ expr label (labels ...) (pat (=> fk) . body) . rest)
+              (match-gen-labels expr fk (labels ... (label fk pat . body)) . rest))
+             ((_ expr label (labels ...) (pat . body) . rest)
+              (match-gen-labels expr fail (labels ... (label fail pat . body)) . rest))
+             ))
 
          (define-syntax match-one
-           (syntax-rules (* ___ quote ? and or not)
+           (syntax-rules (_ ___ quote ? and or not)
              ((match-one var () sk fk)
               (if (null? var) sk fk))
              ((match-one var (quote a) sk fk)
@@ -55,13 +54,13 @@
                   (let ((ls (vector->list var)))
                    (match-one ls (a ...) sk fk))
                   fk))
-             ((match-one var * sk fk) sk)
+             ((match-one var _ sk fk) sk)
              ((match-one var x sk fk)
               (let-syntax ((sym?
                              (syntax-rules ()
                                ((sym? x) (let ((x var)) sk))
                                ((sym? y) (if (equal? var x) sk fk)))))
-                (sym? abracadabra)))
+                (sym? abracadabra)))  ; thanks Oleg
              ))
 
          (define-syntax match-gen-ellipses
@@ -78,7 +77,7 @@
              ))
 
          (define-syntax match-extract-variables
-           (syntax-rules (* ___ quote ? and or not)
+           (syntax-rules (_ ___ quote ? and or not)
              ((_ (a . b) k v)
               (match-extract-variables a (match-extract-variables-step b k v) ()))
              ((_ #(a ...) k v)
@@ -96,33 +95,35 @@
              ((_ a k (v ...) (v2 ...))
               (match-extract-variables a k (v ... v2 ...)))))
 
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+         ;; gimme some sugar baby
 
          (define-syntax match-lambda
            (syntax-rules ()
-             ((_ clause ...) (lambda (expression) (match expression clause ...)))))
+             ((_ clause ...) (lambda (expr) (match expr clause ...)))))
 
          (define-syntax match-lambda*
            (syntax-rules ()
-             ((_ clause ...) (lambda expression (match expression clause ...)))))
+             ((_ clause ...) (lambda expr (match expr clause ...)))))
 
          (define-syntax match-let
            (syntax-rules ()
-             ((_ ((pattern expression)) . body)
-              (match expression (pattern . body)))
-             ((_ ((pattern expression) ...) . body)
-              (match (list expression ...) ((pattern ...) . body)))
+             ((_ ((pat expr)) . body)
+              (match expr (pat . body)))
+             ((_ ((pat expr) ...) . body)
+              (match (list expr ...) ((pat ...) . body)))
              ((_ loop . rest)
               (match-named-let loop () . rest))
              ))
 
          (define-syntax match-named-let
            (syntax-rules ()
-             ((_ loop ((pattern expression var) ...) () . body)
-              (let loop ((var expression) ...)
-               (match-let ((pattern var) ...)
+             ((_ loop ((pat expr var) ...) () . body)
+              (let loop ((var expr) ...)
+               (match-let ((pat var) ...)
                           . body)))
-             ((_ loop (v ...) ((pattern expression) . rest) . body)
-              (match-named-let loop (v ... (pattern expression tmp)) rest . body))
+             ((_ loop (v ...) ((pat expr) . rest) . body)
+              (match-named-let loop (v ... (pat expr tmp)) rest . body))
              ))
 
          (define-syntax match-letrec
@@ -131,18 +132,18 @@
 
          (define-syntax match-letrec-helper
            (syntax-rules ()
-             ((_ ((pattern expression var) ...) () . body)
-              (letrec ((var expression) ...)
-                (match-let ((pattern var) ...)
+             ((_ ((pat expr var) ...) () . body)
+              (letrec ((var expr) ...)
+                (match-let ((pat var) ...)
                            . body)))
-             ((_ (v ...) ((pattern expression) . rest) . body)
-              (match-letrec-helper (v ... (pattern expression tmp)) rest . body))
+             ((_ (v ...) ((pat expr) . rest) . body)
+              (match-letrec-helper (v ... (pat expr tmp)) rest . body))
              ))
 
          (define-syntax match-let*
            (syntax-rules ()
              ((_ () . body)
               (begin . body))
-             ((_ ((pattern expression) . rest) . body)
-              (match expression (pattern (match-let* rest . body))))))
+             ((_ ((pat expr) . rest) . body)
+              (match expr (pat (match-let* rest . body))))))
          )

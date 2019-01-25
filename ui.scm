@@ -2,6 +2,7 @@
          (export flax)
          (import (scheme)
                  (Flax utils)
+                 (Flax srfi match)
                  ; (Flax command build)
                  )
 
@@ -27,6 +28,7 @@
              "Flax 0.0.3 ---  refine the write-content procedure, let the logic be better understood!! \n"
              "Flax 0.0.4 ---  add markdown support and fix some bugs! \n"
              "Flax 0.0.5 ---  successfully navigate the utils and ui! \n"
+             "Flax 0.0.6 ---  add match support!! add srfi !! Will do it all the time!\n"
              "Flax 1.0.0 ---  navigate to chezscheme! \n"])
 
          (define (show-history)
@@ -49,28 +51,26 @@
            (format #t "basic information argument:~%")
            (format #t "[ -v || --version ]  version number~%"))
 
-
-         ;; The main function
          (define (flax arg . extra-args)
-           (cond
-             [(eq? extra-args '())
-              (show-flax)]
-             [(or (string=? (car extra-args) "-h")
-                  (string=? (car extra-args) "--help"))
-              (show-flax-help)]
-             [(or (string=? (car extra-args) "-v")
-                  (string=? (car extra-args) "--version"))
-              (show-version)]
-             [(or (string=? (car extra-args) "-vs")
-                  (string=? (car extra-args) "--version-history"))
-              (show-history)]
-             ; (("build")
-             ;  (build))
-             ; (("build" (or "-h" "--help"))
-             ;  (show-build-help))
-             ; (("build" args ...)
-             ;  (build (car args)))
-             ; (("serve")
-             ;  (format #t "Not ready now, Sorry!~%"))
-             (else (show-flax))))
+           (match extra-args
+                  [("-h" "--help")
+                   (show-flax-help)]
+                  [(or ("-v") ("--version")) 
+                   (show-version)]
+                  [(or ("-vs") ("--version-history"))
+                   (show-history)]
+                  [("build")
+                  ;  (build)
+                   (display "not ready yet!\n")]
+                  [("build" (or "-h" "--help"))
+                  ;  (show-build-help)
+                   (display "build help\n")]
+                  [("build" args ...)
+                  ;  (build (car args))
+                   (display "build with many args\n")
+                   (map display (map string-append args (make-list (length args) "\n")))]
+                  [("serve")
+                   (display "not ready yet!\n")]
+                  (else (show-flax))))
+
          )

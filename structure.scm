@@ -3,6 +3,7 @@
                  type-reader
                  type-page
                  type-post
+                 type-process
                  type-asset
                  lago-system)
          (import (scheme))
@@ -25,9 +26,6 @@
                    (display "Types are listed :\n")
                    (display "|| site || reader || page || post || asset ||\n")))
 
-
-         ;; ~title~ is a string
-         ;; ~domain~ is a string
          ;; ~posts-directory~ where posts found
          ;; ~build-directory~ generated pages stored in
          ;; ~readers~ a list of reader objects
@@ -43,12 +41,17 @@
                  (define-record-type
                    site
                    (nongenerative flax-site)
-                   (fields (mutable asset           site-asset asset-set!)
-                           (mutable process-layer   site-process-layer process-layer-set!)
-                           (mutable posts-directory site-posts-directory posts-directory-set!)
-                           (mutable build-directory site-build-directory build-directory-set!)
-                           (mutable readers         site-readers readers-set!)
-                           (mutable builders        site-builders builders-set!))))
+                   (fields
+                     ;; string or string list which is where the posts are
+                     (mutable posts-directory site-posts-directory posts-directory-set!)
+                     ;; the object directory where the builded page is sended to
+                     (mutable build-directory site-build-directory build-directory-set!)
+                     (mutable asset           site-asset asset-set!)   ;; the asset obj
+                     ;; process-layer must be a list of processes
+                     (mutable process-layer   site-process-layer process-layer-set!)
+                     ;; transfer the post file to the post
+                     (mutable readers         site-readers readers-set!)
+                     (mutable builders        site-builders builders-set!))))
 
          ;; ~matcher~ is a function to judge whether the file is supported
          ;; by this reader
@@ -95,9 +98,10 @@
                  (define-record-type
                    post
                    (nongenerative flax-post)
-                   (fields (mutable name     post-name     name-set!)
-                           (mutable metadata post-metadata metadata-set!)
-                           (mutable sxml     post-sxml     sxml-set!))))
+                   (fields 
+                     (mutable name     post-name     name-set!)
+                     (mutable metadata post-metadata metadata-set!)
+                     (mutable sxml     post-sxml     sxml-set!))))
 
          (module type-asset
                  [make-asset asset?
@@ -109,4 +113,17 @@
                    (fields
                      (immutable target asset-target)
                      (immutable source asset-source))))
+
+         (module type-process
+                 [make-process process?
+                  process-key
+                  process-procedure]
+                 (define-record-type
+                   process
+                   (nongenerative flax-process)
+                   (fields
+                     ;; you'd better set the key as symbol
+                     (immutable key process-key)
+                     ;; the processor is a procedure which process the sxml tree
+                     (immutable procedure process-procedure))))
          )

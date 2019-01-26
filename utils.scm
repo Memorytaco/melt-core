@@ -1,13 +1,17 @@
 (library (Flax utils)
          (export get-absolute-path
+                 mkdir-p
                  decompose-path-name
                  compose-path-name
+                 basename
                  hash-ref
                  assq-ref
                  alist->hash-table
                  alist-delete
-                 while
-                 mkdir-p)
+                 string-split-dual
+                 alist-cons
+                 string-trim
+                 while)
          (import (scheme)
                  (Flax structure))
 
@@ -125,7 +129,7 @@
                (do ((iterate-alist alist (cdr iterate-alist))
                     (pair-list (car alist) (car iterate-alist)))
                  ((eq? iterate-alist '()) ht)
-                 (hashtable-set! ht 
+                 (hashtable-set! ht
                                  (car pair-list)
                                  (cdr pair-list))))))
 
@@ -150,4 +154,46 @@
            (lambda (symbol alist)
              (cdr (assq symbol alist))))
 
+         (define basename
+           (lambda (path)
+             (path-last (path-root path))))
+
+         (define string-split-dual
+           (lambda (arg-string char)
+             (define first-position
+               (lambda (arg-char-list char)
+                 (do ((char-list arg-char-list (cdr char-list))
+                      (end? #f)
+                      (number 0 (+ 1 number)))
+                   (end? (- number 1))
+                   (if (eq? (car char-list)
+                            char)
+                       (set! end? #t))))) ;; zero based
+             (let* ((char-list (string->list arg-string))
+                    (position (first-position char-list char)))
+               (list (apply string (list-head char-list position))
+                     (apply string (list-tail char-list (+ 1 position)))))))
+
+         (define string-trim
+           (lambda (arg-string command)
+             (cond
+               [(eq? command 'prefix)
+                => (do ((string-list (string->list arg-string))
+                        (end? #f))
+                     (end? (string string-list))
+                     (if (equal? (car string-list)
+                                 #\space)
+                         (set! string-list (cdr string-list))
+                         (set! end? #t)))]
+               [(eq? command 'suffix)
+                => (string (reverse (string->list (string-trim (string (reverse (string->list arg-string))) 'prefix))))]
+               [(eq? command 'both)
+                => (string-trim (string-trim arg-string 'prefix)
+                                'suffix)]
+               [else arg-string])))
+
+         (define alist-cons
+           (lambda (key obj alist)
+             (cons (cons key obj)
+                   alist)))
          )

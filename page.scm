@@ -1,70 +1,65 @@
-(library (flax page)
-         (export )
+(library (Flax page)
+         (export page)
          (import (scheme)
-                 (Flax structure))
+                 (Flax structure)
+                 (Flax srfi match)
+                 (Flax utils)
+                 (Flax reader sxml)
+                 (Flax defaults))
 
          (import type-page)
-
-         ;; write the rendered page to one directory
-         ;; the directory can be a path
-         (define (write-page page prefix-directory)
-           (match page
-                  (($ <page> file-name contents writer)
-                   (let ((output (string-append prefix-directory "/" file-name)))
-                     (mkdir-p (dirname output))
-                     (writer contents output)))))
+         (import type-process)
+         (import type-post)
 
          ;; create the default writer for page
          (define (create-writer)
-           (lambda (contents output)
+           (lambda (sxml-tree output)
              (let ((port (open-output-file output)))
-               (sxml->html contents port)
+               (sxml->html sxml-tree port)
                (close-output-port port))))
+
+         ;; write the rendered page to one directory
+         ;; the directory can be a path
+         ;; directory must be absolute path!!!
+         (define (write-page page directory)
+           (match page
+                  (($ page name content writer)
+                   (let ((output (string-append directory "/" name)))
+                     (mkdir-p (path-parent output))
+                     (writer content output)))))
 
          ;; build the page obj and write it to disk
          (define page
            (case-lambda
-             [(post prefix-directory)
-              (let ((process-layer default-processlayer)
-                    (writer (create-writer)))
-                (let ((file-name (regexp-substitute #f (string-match ".[a-zA-Z]+$" (get-post-file-name post)) ;; use regexp to change the ext to "html"
-                                                    'pre ".html")))
-                  (let ((page* (make-page file-name
-                                          ((get-processor (assq-ref process-layer 'meta))
-                                           #:process-layer process-layer
-                                           ;; the process-object is a post-object
-                                           #:process-object post)
-                                          writer)))
-                    (write-page page* prefix-directory))))]
-             [(post prefix-directory process-layer)
-              (let ((writer (create-writer)))
-                (let ((file-name (regexp-substitute #f (string-match ".[a-zA-Z]+$" (get-post-file-name post)) ;; use regexp to change the ext to "html"
-                                                    'pre ".html")))
-                  (let ((page* (make-page file-name
-                                          ((get-processor (assq-ref process-layer 'meta))
-                                           #:process-layer process-layer
-                                           ;; the process-object is a post-object
-                                           #:process-object post)
-                                          writer)))
-                    (write-page page* prefix-directory))))]))
+             [(post directory)
+              (let* ((process-layer default-process-layer)
+                     (writer (create-writer))
+                     (page* (make-page (string-append (path-root (post-name post))
+                                                      ".html")
+                                       ((process-procedure (assq-ref process-layer 'meta)) process-layer post)
+                                       writer)))
+                (write-page page* directory))]
+             [(post directory process-layer)
+              (let* ((writer (create-writer))
+                     (page* (make-page (string-append (path-root (post-name post))
+                                                      ".html")
+                                       ((process-procedure (assq-ref process-layer 'meta)) process-layer post)
+                                       writer)))
+                (write-page page* directory))]))
 
-         ; (define-module (Flax page)
-         ;   #:use-module (Flax post)
-         ;   #:use-module (Flax html)
-         ;   #:use-module (Flax process)
+         )
+;   #:use-module (ice-9 regex)
+;   #:use-module (ice-9 match)
+;   #:use-module (srfi srfi-9)
+;   #:use-module (srfi srfi-26)
+;   #:use-module (Flax utils)
 
-         ;   #:use-module (ice-9 regex)
-         ;   #:use-module (ice-9 match)
-         ;   #:use-module (srfi srfi-9)
-         ;   #:use-module (srfi srfi-26)
-         ;   #:use-module (Flax utils)
-
-         ;   #:export (make-page
-         ;             is-page?
-         ;             get-page-file-name
-         ;             get-page-contents
-         ;             get-page-writer
-         ;             write-page
-         ;       create-writer
-         ;       page))
+;   #:export (make-page
+;             is-page?
+;             get-page-file-name
+;             get-page-contents
+;             get-page-writer
+;             write-page
+;       create-writer
+;       page))
 

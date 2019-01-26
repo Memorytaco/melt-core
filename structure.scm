@@ -77,14 +77,14 @@
          ;;          to some formats
          (module type-page
                  [make-page page?
-                  page-name name-set!
+                  page-name page-name-set!
                   page-content content-set!
                   page-writer writer-set!]
                  (define-record-type
                    page
                    (nongenerative flax-page)
                    (fields
-                     (mutable name    page-name    name-set!)
+                     (mutable name    page-name    page-name-set!)
                      (mutable content page-content content-set!)
                      (mutable writer  page-writer  writer-set!))))
 
@@ -92,14 +92,14 @@
          ;; ~sxml~ is a sxml tree
          (module type-post
                  [make-post post?
-                  post-name name-set!
+                  post-name post-name-set!
                   post-metadata metadata-set!
                   post-sxml sxml-set!]
                  (define-record-type
                    post
                    (nongenerative flax-post)
                    (fields 
-                     (mutable name     post-name     name-set!)
+                     (mutable name     post-name     post-name-set!)
                      (mutable metadata post-metadata metadata-set!)
                      (mutable sxml     post-sxml     sxml-set!))))
 

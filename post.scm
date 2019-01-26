@@ -1,56 +1,67 @@
 (library (Flax post)
          (export read-post
-                 )
+                 post-ref)
          (import (scheme)
                  (Flax structure)
                  (Flax utils)
-                 (Flax reader))
+                 (Flax srfi match)
+                 (Flax reader reader))
 
          (import type-post)
+         (import type-reader)
 
 
          ;; read one post and return post object
          (define (read-post file-name reader-list)
-                  (if (pair? reader-list)
-                      (if (is-reader-available? (car reader-list) file-name)
-                          (let-values (((meta-data content) (proc-of-reader (car reader-list) file-name)))
-                            (make-post (basename file-name) meta-data content))
-                          (read-post file-name (cdr reader-list)))
-                      (begin
-                        (format (current-error-port) "Unmatched file : ~a ~%" file-name)
-                        '())))
+           (let ((reader (reader-available? reader-list file-name)))
+             (if reader
+                 (let-values (((meta-data content) ((reader-proc reader) file-name)))
+                   (make-post (basename file-name) meta-data content))
+                 (begin
+                   (format (current-error-port) "Unmatched file : ~a ~%" file-name)
+                   '()))))
 
-         (define (post-ref post key)
-           (assq-ref (post-metadata post) key))
+         (define (post-ref key post)
+           (assq-ref key (post-metadata post)))
 
 
          ;; read meta data
          (define %metadata-parsers
-           (make-hash-table))
+           (make-eq-hashtable))
 
          (define (register-metadata-parser! name parser)
-           (hash-set! %metadata-parsers name parser))
+           (hashtable-set! %metadata-parsers name parser))
 
-         (define (metadata-parser key)
-           (or (hash-ref %metadata-parsers key) identity))
+         (define (get-metadata-parser key)
+           (hashtable-ref %metadata-parsers key identity))
 
          (define (parse-metadata key value)
-           ((metadata-parser key) value))
+           ((get-metadata-parser key) value))
 
          (define (read-metadata-headers port)
+           (define (string-trim-both string)
+             (string-trim string 'both))
+
            (let loop ((metadata '()))
-             (let ((line (read-line port)))
+             (let ((line (get-line port)))
                (cond
-                 ((eof-object? line)
-                  (error "end of file while readig metadata: " (port-filename port)))
-                 ((string=? line "---")
-                  metadata)
+                 [(eof-object? line)
+                  => (error (port-name port)
+                            "end of file while readig metadata: " )]
+                 [(string=? line "---")
+                  => metadata]
                  (else
-                   (match (map string-trim-both (string-split-at line #\:))
+                   (match (map string-trim-both (string-split-dual line #\:))
                           (((= string->symbol key) value)
                            (loop (alist-cons key (parse-metadata key value) metadata)))
-                          (_ error "invalid metadata format: " line)))))))
+                          (_ (error line "invalid metadata format."))))))))
 
+         ;; just like echo, return what it accept!!
+         (define identity
+           (lambda (obj)
+             obj))
+
+         ;; two new parser
          (register-metadata-parser!
            'type
            (lambda (str)
@@ -60,26 +71,12 @@
            'depth
            (lambda (str)
              (string->number str)))
+
          )
 
 ; (define-module (Flax post)
 ;   #:use-module (Flax utils)
 ;   #:use-module (Flax reader)
-
-;   #:use-module (ice-9 match)
-;   #:use-module (ice-9 rdelim)
-;   #:use-module (srfi srfi-1)
-;   #:use-module (srfi srfi-9)
-;   #:use-module (srfi srfi-11)
-;   #:use-module (srfi srfi-19)
-
-
-;   #:export (make-post
-;             is-post?
-;             get-post-file-name
-;             get-post-metadata
-;             get-post-sxml
-;       set-post-sxml
 
 ;       read-post
 ;       post-ref

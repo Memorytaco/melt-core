@@ -29,6 +29,7 @@
              "Flax 0.0.4 ---  add markdown support and fix some bugs! \n"
              "Flax 0.0.5 ---  successfully navigate the utils and ui! \n"
              "Flax 0.0.6 ---  add match support!! add srfi !! Will do it all the time!\n"
+             "Flax 0.0.7 ---  get defaults.scm done! get sxml->html done! Now left post.scm site.scm page.scm space.scm command builder.\n"
              "Flax 1.0.0 ---  navigate to chezscheme! \n"])
 
          (define (show-history)

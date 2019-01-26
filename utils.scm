@@ -2,6 +2,10 @@
          (export get-absolute-path
                  decompose-path-name
                  compose-path-name
+                 hash-ref
+                 assq-ref
+                 alist->hash-table
+                 alist-delete
                  while
                  mkdir-p)
          (import (scheme)
@@ -87,6 +91,7 @@
          (define (compose-path-name str-list)
            (string-join str-list "/" 'prefix))
 
+         ;; while the test is satified, end the iterate
          (define-syntax while
            (syntax-rules ()
              [(_ test forms ...)
@@ -114,26 +119,35 @@
                         (set! file-name (string-append file-name "/" (car dir-list)))))
              #t))
 
+         (define alist->hash-table
+           (lambda (alist)
+             (let ((ht (make-eqv-hashtable)))
+               (do ((iterate-alist alist (cdr iterate-alist))
+                    (pair-list (car alist) (car iterate-alist)))
+                 ((eq? iterate-alist '()) ht)
+                 (hashtable-set! ht 
+                                 (car pair-list)
+                                 (cdr pair-list))))))
+
+         (define hash-ref
+           (case-lambda
+             [(hashtable key)
+              (hashtable-ref hashtable key #f)]
+             [(hashtable key default)
+              (hashtable-ref hashtable key default)]))
+
+         ;; return the left alist which dosn't contain the symbal
+         (define alist-delete
+           (lambda (symbal alist)
+             (do ((arg-list alist (cdr arg-list))
+                  (compare-list (assq symbal alist))
+                  (rest-alist '() (if (equal? compare-list (car arg-list))
+                                      rest-alist
+                                      (cons (car arg-list) rest-alist))))
+               ((eq? arg-list '()) rest-alist))))
+
+         (define assq-ref
+           (lambda (symbol alist)
+             (cdr (assq symbol alist))))
+
          )
-
-; (define-module (Flax utils)
-;                #:use-module (ice-9 ftw)
-;                #:use-module (ice-9 match)
-;                #:use-module (ice-9 regex)
-;                #:use-module (srfi srfi-1)
-;                #:use-module (srfi srfi-13)
-;                #:use-module (srfi srfi-19)
-;                #:use-module (srfi srfi-26)
-
-;                #:export (get-absolute-path
-;                           decompose-file-name
-;                           compose-file-name
-;                           mkdir-p
-;                           delete-file-recursively
-;                           remove-stat
-;                           is-directory?
-;                           get-file-tree-list
-;                           make-user-module
-;                           config-load
-;                           string-split-at))
-

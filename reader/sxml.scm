@@ -1,14 +1,18 @@
+#!chezscheme
 ;; convert sxml to html
-(library (Flax readers sxml)
+(library (Flax reader sxml)
          (export sxml->html
                  sxml->html-string)
-         (import (scheme))
+         (import (scheme)
+                 (Flax utils)
+                 (Flax srfi match))
 
 
          (define %void-elements
            '[area
               base
-              br col
+              br
+              col
               command
               embed
               hr
@@ -21,6 +25,7 @@
               source
               track
               wbr])
+
          ;; pair? if arg is atom ,return #t,else if list return #t
          (define (void-element? tag)
            "Return #t if TAG is a void element."
@@ -37,7 +42,7 @@
                (#\> . "gt"))))
 
          (define (string->escaped-html S port)
-           "Write the HTML escaped form of S to PORT."
+           ;Write the HTML escaped form of S to PORT.
            (define (escape c)
              (let ((escaped (hash-ref %escape-chars c)))
                (if escaped
@@ -46,13 +51,15 @@
            (string-for-each escape S))
 
          (define (object->escaped-html obj port)
-           "Write the HTML escaped form of OBJ to PORT."
+           ; Write the HTML escaped form of OBJ to PORT.
            (string->escaped-html
-             (call-with-output-string (cut display obj <>))
+             (call-with-string-output-port
+               (lambda (x)
+                 (display obj x)))
              port))
 
          (define (attribute-value->html value port)
-           "Write the HTML escaped form of VALUE to PORT."
+           ; Write the HTML escaped form of VALUE to PORT.
            (if (string? value)
                (string->escaped-html value port)
                (object->escaped-html value port)))
@@ -64,8 +71,8 @@
            (display #\" port))
 
          (define (element->html tag attrs body port)
-           "Write the HTML TAG to PORT, where TAG has the attributes in the
-           list ATTRS and the child nodes in BODY."
+           ; Write the HTML TAG to PORT, where TAG has the attributes in the
+           ; list ATTRS and the child nodes in BODY.
            (format port "<~a" tag)
            (for-each (match-lambda
                        ((attr value)
@@ -76,43 +83,35 @@
                (display " />" port)
                (begin
                  (display #\> port)
-                 (for-each (cut sxml->html <> port) body)
+                 (for-each (lambda (x)
+                             (sxml->html x port)) body)
                  (format port "</~a>" tag))))
 
            (define (doctype->html doctype port)
              (format port "<!DOCTYPE ~a>" doctype))
 
-           (define* (sxml->html tree port)
-                    "Write the serialized HTML form of TREE to PORT."
-                    (match tree
-                           (() *unspecified*)
-                           (('doctype type)
-                            (doctype->html type port))
-                           (((? symbol? tag) ('@ attrs ...) body ...)
-                            (element->html tag attrs body port))
-                           (((? symbol? tag) body ...)
-                            (element->html tag '() body port))
-                           ((nodes ...)
-                            (for-each (cut sxml->html <> port) nodes))
-                           ((? string? text)
-                            (string->escaped-html text port))
-                           ;; Render arbitrary Scheme objects, too.
-                           (obj (object->escaped-html obj port))))
+           (define (sxml->html tree port)
+             ;Write the serialized HTML form of TREE to PORT.
+             (match tree
+                    (() 'unspecified)
+                    (('doctype type)
+                     (doctype->html type port))
+                    (((? symbol? tag) ('@ attrs ...) body ...)
+                     (element->html tag attrs body port))
+                    (((? symbol? tag) body ...)
+                     (element->html tag '() body port))
+                    ((nodes ...)
+                     (for-each (lambda (x)
+                                 (sxml->html x port)) nodes))
+                    ((? string? text)
+                     (string->escaped-html text port))
+                    ;; Render arbitrary Scheme objects, too.
+                    (obj (object->escaped-html obj port))))
 
            (define (sxml->html-string sxml)
-             "Render SXML as an HTML string."
-             (call-with-output-string
+             ; Render SXML as an HTML string.
+             (call-with-string-output-port
                (lambda (port)
                  (sxml->html sxml port))))
 
            )
-
-; (define-module (Flax html)
-;                #:use-module (sxml simple)
-;                #:use-module (srfi srfi-26)
-;                #:use-module (ice-9 match)
-;                #:use-module (ice-9 format)
-;                #:use-module (ice-9 hash-table)
-;                #:export (sxml->html
-;                           sxml->html-string))
-

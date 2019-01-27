@@ -1,53 +1,80 @@
-(define-module (Flax asset)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9) ;;record type
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 ftw)
-  #:use-module (Flax utils)
-  #:export (make-asset
-            is-asset?
-            get-asset-source
-            get-asset-target
-            
-	    cp-asset
-	    cp-file-tree))
+(library (Flax asset)
+         (export asset-cp
+                 asset-list-cp
+                 cp-f
+                 cp-rf
+                 directory-separator-string
+                 mkdir-r)
+         (import (scheme)
+                 (Flax srfi match)
+                 (Flax utils)
+                 (Flax structure))
 
-(define-record-type <asset>
-  (make-asset source target)
-  is-asset?
-  (source get-asset-source)
-  (target get-asset-target))
+         (import type-asset)
 
-(define (cp-asset obj)
-  (let ((src-assets (get-asset-source obj))
-	(target-directory (get-asset-target obj)))
-    (cp-file-tree src-assets target-directory)))
+         ;; for single object
+         ;; copy the src file to the target-directory
+         (define (asset-cp asset-obj)
+           (let ((src-directory (asset-source asset-obj))
+                 (target-directory (asset-target asset-obj)))
+             (cp-rf src-directory
+                    (string-append target-directory
+                                   (directory-separator-string)
+                                   src-directory))))
 
-;; return a list of ~nth~ same element
-(define (repeat-element-of-list nth element)
-  (if (= 0 nth)
-      '()
-      (cons element (repeat-element-of-list (- nth 1) element))))
+         (define (asset-list-cp asset-list)
+           (map asset-cp asset-list))
 
-;; src is the resource directory
-;; prefix is absolute path where the source will go in
-;; the organization is like dest-prefix/src
-(define (file-tree-move src-tree src-path prefix)
-  (if (not (pair? src-tree))
-      (let ((src-file-name (string-append src-path "/" src-tree))
-            (dest-file-path (string-append prefix "/" src-tree)))
-        (if (is-directory? src-file-name)
-            (mkdir-p dest-file-path)
-            (copy-file src-file-name dest-file-path)))
-      (begin (mkdir-p (string-append prefix "/" (car src-tree)))
-             (map file-tree-move (cdr src-tree)
-                  (repeat-element-of-list (length (cdr src-tree))
-                                          (string-append src-path "/" (car src-tree)))
-                  (repeat-element-of-list (length (cdr src-tree))
-                                          (string-append prefix "/" (car src-tree)))))))
-;;
-(define (cp-file-tree src prefix)
-  (mkdir-p (get-absolute-path prefix))
-  (file-tree-move (get-file-tree-list src)
-                  (dirname (get-absolute-path src))
-                  (get-absolute-path prefix)))
+
+         ;; accept strings as arguments
+         ;; if the target exsites, replace it.
+         (define (cp-f src-file target-file)
+           (if (not (file-exists? src-file)) (error src-file "File not exists!"))
+           (mkdir-r (path-parent target-file))
+           (copy-file src-file target-file (file-options no-fail)))
+
+         (define (directory-separator-string)
+           (string (directory-separator)))
+
+         ;; copy recursively and force
+         (define (cp-rf src-file target-file)
+           (if (file-exists? src-file)
+               (cond
+                 [(file-regular? src-file)
+                  (cp-f src-file target-file)]
+                 [(file-directory? src-file)
+                  (mkdir-r target-file)
+                  (do ((file-list (directory-list src-file) (cdr file-list))
+                       (element (car (directory-list src-file)) (car file-list)))
+                    ((null? file-list)
+                     (cp-rf (string-append src-file (directory-separator-string) element)
+                            (string-append target-file (directory-separator-string) element))
+                     #t)
+                    (cp-rf (string-append src-file (directory-separator-string) element)
+                           (string-append target-file (directory-separator-string) element)))])
+               (error src-file "File not exists")))
+
+
+         ;; create directory recursively
+         ;; if one directory exists, just enter it and create rest directory
+         ;; it will never report an error!!
+         (define (mkdir-r dir)
+           ; Create the dir just like use makedir bash command but clever
+           (define dir-list (decompose-path-name dir))
+           (let ((file-name (if (path-absolute? dir)
+                                (string-append "/" (car dir-list))
+                                (car dir-list))))
+             (while (eq? '() dir-list)
+                    (if (file-exists? file-name)
+                        (if (not (file-directory? file-name))
+                            (begin
+                              (format (current-error-port) "There exists conficts file!!~%")
+                              (break)))
+                        (mkdir file-name))
+                    (set! dir-list (cdr dir-list))
+                    (if (not (eq? '() dir-list))
+                        (set! file-name (string-append file-name "/" (car dir-list)))))
+             #t))
+
+
+         )

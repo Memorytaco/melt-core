@@ -2,6 +2,7 @@
          (export )
          (import (scheme)
                  (Flax structure)
+                 (Flax asset)
                  (Flax srfi srfi))
 
          (import type-site)
@@ -61,7 +62,7 @@
                           ;;if flag is #f, it is a single element from the file tree list
                           (if (is-directory? (string-append environment "/" posts-file-tree))
                               ;; if the file is a directory, create it
-                              (mkdir-p (string-append prefix-directory "/" posts-file-tree))
+                              (mkdir-r (string-append prefix-directory "/" posts-file-tree))
                               ;; if not, write the page
                               (let ((post (read-post (string-append environment "/" posts-file-tree)
                                                      #:reader-list reader-list)))

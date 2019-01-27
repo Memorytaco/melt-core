@@ -4,6 +4,7 @@
                  (Flax structure)
                  (Flax srfi match)
                  (Flax utils)
+                 (Flax asset)
                  (Flax reader sxml)
                  (Flax defaults))
 
@@ -25,7 +26,7 @@
            (match page
                   (($ page name content writer)
                    (let ((output (string-append directory "/" name)))
-                     (mkdir-p (path-parent output))
+                     (mkdir-r (path-parent output))
                      (writer content output)))))
 
          ;; build the page obj and write it to disk

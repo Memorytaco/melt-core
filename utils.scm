@@ -1,6 +1,6 @@
 (library (Flax utils)
          (export get-absolute-path
-                 mkdir-p
+                 copy-file
                  decompose-path-name
                  compose-path-name
                  basename
@@ -11,6 +11,7 @@
                  string-split-dual
                  alist-cons
                  string-trim
+                 list-directory
                  while)
          (import (scheme)
                  (Flax structure))
@@ -29,7 +30,7 @@
 
          ;; decompose a string
          ;; example
-         ;; "/usr/lib/share" => ("usr" "lib" "share")
+         ;; "/usr/lib/share" ==> ("usr" "lib" "share")
          (define (decompose-path-name path-name)
            (define (generate-list path)
              (if (eq? path "")
@@ -103,26 +104,6 @@
                 (test)
                 forms ...)]))
 
-         ;; create directory
-         ;; mark !! need to improve!!!!!!!!!!!!!!!!!!!!!!!!!!
-         (define (mkdir-p dir)
-           ; Create the dir just like use makedir bash command but clever
-           (define dir-list (decompose-path-name dir))
-           (let ((file-name (if (path-absolute? dir)
-                                (string-append "/" (car dir-list))
-                                (car dir-list))))
-             (while (eq? '() dir-list)
-                    (if (file-exists? file-name)
-                        (if (not (file-directory? file-name))
-                            (begin
-                              (format (current-error-port) "There conficts file exists!!~%")
-                              (break)))
-                        (mkdir file-name))
-                    (set! dir-list (cdr dir-list))
-                    (if (not (eq? '() dir-list))
-                        (set! file-name (string-append file-name "/" (car dir-list)))))
-             #t))
-
          (define alist->hash-table
            (lambda (alist)
              (let ((ht (make-eqv-hashtable)))
@@ -175,25 +156,51 @@
                      (apply string (list-tail char-list (+ 1 position)))))))
 
          (define string-trim
-           (lambda (arg-string command)
+           (lambda (arg-string symbol)
              (cond
-               [(eq? command 'prefix)
-                => (do ((string-list (string->list arg-string))
-                        (end? #f))
-                     (end? (string string-list))
-                     (if (equal? (car string-list)
-                                 #\space)
-                         (set! string-list (cdr string-list))
-                         (set! end? #t)))]
-               [(eq? command 'suffix)
-                => (string (reverse (string->list (string-trim (string (reverse (string->list arg-string))) 'prefix))))]
-               [(eq? command 'both)
-                => (string-trim (string-trim arg-string 'prefix)
-                                'suffix)]
-               [else arg-string])))
+               [(eq? symbol 'prefix)
+                (do ((string-list (string->list arg-string))
+                     (end? #f))
+                  [end? (apply string string-list)]
+                  (if (equal? (car string-list)
+                              #\space)
+                      (set! string-list (cdr string-list))
+                      (set! end? #t)))]
+               [(eq? symbol 'suffix)
+                (apply string (reverse (string->list (string-trim (apply string (reverse (string->list arg-string))) 'prefix))))]
+               [(eq? symbol 'both)
+                (string-trim (string-trim arg-string 'prefix)
+                             'suffix)]
+               [else (error symbol "Not proper symbol!")])))
+
 
          (define alist-cons
            (lambda (key obj alist)
              (cons (cons key obj)
                    alist)))
+
+         (define list-directory
+           (lambda path
+             (cond
+               [(null? path)
+                (directory-list (cd))]
+               [else (map directory-list path)])))
+
+         ;; copy file
+         ;; the mode is for the output port
+         (define copy-file
+           (case-lambda
+             [(src-file target-file)
+              (let ((input-port (open-file-input-port src-file))
+                    (output-port (open-file-output-port target-file)))
+                (put-bytevector output-port (get-bytevector-all input-port))
+                (close-port input-port)
+                (close-port output-port))]
+             [(src-file target-file mode)
+              (let ((input-port (open-file-input-port src-file))
+                    (output-port (open-file-output-port target-file mode)))
+                (put-bytevector output-port (get-bytevector-all input-port))
+                (close-port input-port)
+                (close-port output-port))]))
+
          )

@@ -20,7 +20,7 @@
          ;; -- the third number is the branch version number. Every bug fix or feature
          ;;    added or some procedure updated will update the number.
          (define (show-version)
-           (format #t "Flax version 0.0.5 ~%"))
+           (format #t "Flax version 0.0.8 ~%"))
 
          (define version-history
            '["Flax 0.0.1 ---  complete the basic functions, split the process procedure out. \n"
@@ -31,6 +31,7 @@
              "Flax 0.0.6 ---  add match support!! add srfi !! Will do it all the time! \n"
              "Flax 0.0.7 ---  get defaults.scm done! get sxml->html done! Now left post.scm site.scm page.scm space.scm command builder. \n"
              "Flax 0.0.8 ---  complete post.scm and page.scm comming up with some extra utilities in utils.scm. \n"
+             "Flax 0.0.9 ---  get the asset.scm done! fix string-trim procedure and add some usefull utilities. \n"
              "Flax 1.0.0 ---  navigate to chezscheme! \n"])
 
          (define (show-history)

@@ -105,14 +105,14 @@
 
          (module type-asset
                  [make-asset asset?
-                  asset-target
-                  asset-source]
+                  asset-source
+                  asset-target]
                  (define-record-type
                    asset
                    (nongenerative flax-asset)
                    (fields
-                     (immutable target asset-target)
-                     (immutable source asset-source))))
+                     (immutable source asset-source)
+                     (immutable target asset-target))))
 
          (module type-process
                  [make-process process?

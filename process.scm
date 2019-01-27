@@ -9,13 +9,19 @@
          (import type-process)
 
          ;; return the process from the process-layer otherwise
-         ;; return '()
-         (define (process-ref process-layer key)
-           (assq-ref process-layer key))
+         ;; return #f
+         (define (process-ref key process-layer)
+           (let ((process (assq-ref process-layer key)))
+             (if process
+                 process
+                 #f)))
 
          ;; return the processor of one process in process-layer
-         (define (procedure-ref process-layer key)
-           (process-procedure (process-ref process-layer key)))
+         (define (procedure-ref key process-layer)
+           (let ((process (process-ref key process-layer)))
+             (if process
+                 (process-procedure process)
+                 #f)))
 
 
          ;; read each post, genereate an alist of post path , not completed!!

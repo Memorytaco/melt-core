@@ -3,6 +3,9 @@
                  type-reader
                  type-page
                  type-post
+                 type-builder
+                 type-hook
+                 type-chain
                  type-process
                  type-asset
                  lago-system)
@@ -126,5 +129,63 @@
                      (immutable key process-key)
                      ;; the processor is a procedure which process the sxml tree
                      (immutable procedure process-procedure))))
+
+         (module type-builder
+                 [make-builder builder?
+                  builder-name
+                  builder-proc
+                  builder-type]
+                 (define-record-type
+                   builder
+                   (nongenerative flax-builder)
+                   (fields
+                     ;; the only specific symbol for builder
+                     (immutable name builder-name)
+                     ;; the implement of the builder
+                     (immutable proc builder-proc)
+                     ;; the builder process type
+                     (immutable type builder-type))))
+
+         ;; define data cell
+         (module type-hook
+                 [make-hook hook?
+                  hook-type
+                  hook-proc-arg proc-arg-set!
+                  hook-data hook-data-set!]
+                 (define-record-type
+                   hook
+                   (nongenerative flax-hook)
+                   (fields
+                     ;; if the type is 'data, proc-arg contain data
+                     ;; else if the type is 'proc, proc-arg is defined as following
+                     (immutable type hook-type)
+                     ;; proc-arg is a dot pair
+                     ;; (procedure . args)
+                     ;; the hook function
+                     ;; the arguments, it must be wrapped in a list
+                     (mutable proc-arg hook-proc-arg proc-arg-set!)
+                     ;; it sotres hook data, it must be same as chain data
+                     (mutable data hook-data hook-data-set!))))
+
+         ;; define the execution priority and data transform
+         (module type-chain
+                 [make-chain chain?
+                  chain-condition condition-set!
+                  chain-execution execution-set!
+                  chain-data chain-data-set!]
+                 (define-record-type
+                   chain
+                   (nongenerative flax-chain)
+                   (fields
+                     ;; condition must be #t or #f
+                     ;; or a procedure which return #t
+                     ;; or #f and accept no argument
+                     (mutable condition chain-condition condition-set!)
+                     ;; it is a list of procedure without arguments
+                     (mutable execution chain-execution execution-set!)
+                     ;; it's a unproper dot list,
+                     ;; and car is the key list
+                     ;; while cdr is an assoc list
+                     (mutable data chain-data chain-data-set!))))
 
          )

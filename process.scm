@@ -3,6 +3,7 @@
                  procedure-ref)
          (import (scheme)
                  (Flax structure)
+                 (Flax utils)
                  (Flax post))
 
 

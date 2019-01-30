@@ -6,10 +6,12 @@
                  basename
                  hash-ref
                  assq-ref
+                 element-exist?
                  alist->hash-table
                  alist-delete
-                 string-split-dual
+                 alist?
                  alist-cons
+                 string-split-dual
                  string-trim
                  list-directory
                  while)
@@ -177,7 +179,7 @@
          (define alist-cons
            (lambda (key obj alist)
              (cons (cons key obj)
-                   alist)))
+                    alist)))
 
          (define list-directory
            (lambda path
@@ -202,5 +204,25 @@
                 (put-bytevector output-port (get-bytevector-all input-port))
                 (close-port input-port)
                 (close-port output-port))]))
+
+         (define alist?
+           (lambda (arg)
+             (cond
+               [(null? arg)
+                #t]
+               [(atom? arg)
+                #f]
+               [(list? arg)
+                (not (list? (car arg)))])))
+
+         (define element-exist?
+           (lambda (element arg-list)
+             (cond
+               [(null? arg-list)
+                #f]
+               [else 
+                 (if (equal? element (car arg-list))
+                     #t
+                     (element-exist? element (cdr arg-list)))])))
 
          )

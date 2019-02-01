@@ -33,6 +33,7 @@
              "Flax 0.0.8 ---  complete post.scm and page.scm comming up with some extra utilities in utils.scm. \n"
              "Flax 0.0.9 ---  get the asset.scm done! fix string-trim procedure and add some usefull utilities. \n"
              "Flax 0.1.0 ---  has defined hook system. Although the system is really simple. need to renegrate all logic. \n"
+             "Flax 0.1.1 ---  has refined the hook system. add some procedures. \n"
              "Flax 1.0.0 ---  navigate to chezscheme! \n"])
 
          (define (show-history)

@@ -23,11 +23,10 @@
          (define site
            (define-assoc-lambda make-site
                                 '[post-directory build-directory asset
-                                  process-layer readers builders]
+                                  process-layer readers]
                                 `["posts" "blog"
                                   ,(make-asset "assets" "blog")
                                   ,default-process-layer
-                                  ,default-readers
-                                  ,default-builders]))
+                                  ,default-readers]))
          
          )

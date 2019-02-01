@@ -39,8 +39,7 @@
                   site-process-layer process-layer-set!
                   site-posts-directory posts-directory-set!
                   site-build-directory build-directory-set!
-                  site-readers readers-set!
-                  site-builders builders-set!]
+                  site-readers readers-set!]
                  (define-record-type
                    site
                    (nongenerative flax-site)
@@ -53,8 +52,7 @@
                      ;; process-layer must be a list of processes
                      (mutable process-layer   site-process-layer process-layer-set!)
                      ;; transfer the post file to the post
-                     (mutable readers         site-readers readers-set!)
-                     (mutable builders        site-builders builders-set!))))
+                     (mutable readers         site-readers readers-set!))))
 
          ;; ~matcher~ is a function to judge whether the file is supported
          ;; by this reader
@@ -149,6 +147,7 @@
          ;; define data cell
          (module type-hook
                  [make-hook hook?
+                  hook-name
                   hook-type
                   hook-proc-arg proc-arg-set!
                   hook-data hook-data-set!]
@@ -158,6 +157,7 @@
                    (fields
                      ;; if the type is 'data, proc-arg contain data
                      ;; else if the type is 'proc, proc-arg is defined as following
+                     (immutable name hook-name)
                      (immutable type hook-type)
                      ;; proc-arg is a dot pair
                      ;; (procedure . args)

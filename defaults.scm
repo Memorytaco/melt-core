@@ -1,12 +1,12 @@
 #!chezscheme
 (library (Flax defaults)
-         (export default-process-layer
-                 default-readers
-                 simple-readers
-                 default-builders)
+         (export process-layer-module
+                 reader-module
+                 builder-module)
          (import (scheme)
                  (Flax structure)
                  (Flax utils)
+                 (Flax invoke)
                  (Flax reader reader)
                  (Flax reader sxml))
 
@@ -96,7 +96,7 @@
 
 
          ;;; readers
-         (module simple-readers
+         (module reader-module
                  [sxml-reader
                    default-readers]
 
@@ -106,8 +106,14 @@
                  ;; take the file as the scheme code and then read it
                  (define sxml-reader
                    (make-reader (make-reader-matcher "sxml")
-                                (lambda (file)
-                                  (let ((contents (load (get-absolute-path file))))
+                                (lambda (file-name cache-directory)
+                                  (let ((contents ((lambda (file-name)
+                                                     (define fasl (string-append cache-directory (string (directory-seperator)) (basename file-name)))
+                                                     (fasl-file file-name fasl)
+                                                     (define port (open-file-input-port fasl))
+                                                     (define content (fasl-read port))
+                                                     (close-input-port port)
+                                                     content) file-name)))
                                     (values (alist-delete 'content contents eq?) ;; return the metadata list
                                             (cdr (assq contents 'content)))))))    ;; return the list
 
@@ -120,11 +126,26 @@
                  ;                                          (values (read-metadata-headers port)
                  ;                                                  (commonmark->sxml port)))))))
 
-                 (define default-readers (list sxml-reader )))
-         (import simple-readers)
+                 (define default-readers (list sxml-reader)))
 
-         (define default-builders)
+         (module builder-module
+                 [default-builder]
 
+                 (define (build site)
+                   )
+                 )
 
+         (module chain-module
+                 [default-chain]
+
+                 (define default-chain (init-chain #t (lambda ()
+                                                        (display "Building ...\n"))
+                                                   (init-empty-data)))
+
+                 (add-hook default-chain (create-hook 'site 'data (create-data ())))
+                 (add-hook default-chain (create-hook 'data (create-data '(posts-directory build-directory asset process-layer readers)
+                                                                         (list ))))
+
+                 )
 
          )

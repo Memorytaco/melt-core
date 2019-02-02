@@ -44,15 +44,15 @@
                    site
                    (nongenerative flax-site)
                    (fields
-                     ;; string or string list which is where the posts are
-                     (mutable posts-directory site-posts-directory posts-directory-set!)
-                     ;; the object directory where the builded page is sended to
-                     (mutable build-directory site-build-directory build-directory-set!)
-                     (mutable asset           site-asset asset-set!)   ;; the asset obj
-                     ;; process-layer must be a list of processes
-                     (mutable process-layer   site-process-layer process-layer-set!)
-                     ;; transfer the post file to the post
-                     (mutable readers         site-readers readers-set!))))
+                    ;; string or string list which is where the posts are
+                    (mutable posts-directory site-posts-directory posts-directory-set!)
+                    ;; the object directory where the builded page is sended to
+                    (mutable build-directory site-build-directory build-directory-set!)
+                    (mutable asset           site-asset asset-set!)   ;; the asset obj
+                    ;; process-layer must be a list of processes
+                    (mutable process-layer   site-process-layer process-layer-set!)
+                    ;; transfer the post file to the post
+                    (mutable readers         site-readers readers-set!))))
 
          ;; ~matcher~ is a function to judge whether the file is supported
          ;; by this reader

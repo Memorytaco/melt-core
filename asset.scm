@@ -3,7 +3,6 @@
                  asset-list-cp
                  cp-f
                  cp-rf
-                 directory-separator-string
                  mkdir-r)
          (import (scheme)
                  (Flax srfi match)
@@ -25,16 +24,12 @@
          (define (asset-list-cp asset-list)
            (map asset-cp asset-list))
 
-
          ;; accept strings as arguments
          ;; if the target exsites, replace it.
          (define (cp-f src-file target-file)
            (if (not (file-exists? src-file)) (error src-file "File not exists!"))
            (mkdir-r (path-parent target-file))
            (copy-file src-file target-file (file-options no-fail)))
-
-         (define (directory-separator-string)
-           (string (directory-separator)))
 
          ;; copy recursively and force
          (define (cp-rf src-file target-file)

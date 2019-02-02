@@ -143,7 +143,9 @@
   (define (hook-execute hook)
     (if (eq? 'proc (hook-type hook))
         (apply (get-hook-proc hook)
-               (get-hook-args hook))
+               (if (list? (get-hook-args hook))
+				   (get-hook-args hook)
+				   (error 'hook-execute "the arguments must be wrapped in a list")))
         (error 'hook "hook type is not 'proc! : hook-execute")))
 
   (define (chain-hooks-list-query chain hook-type-key)

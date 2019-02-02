@@ -80,15 +80,15 @@
                         (attribute->html attr value port)))
                      attrs)
            (if (and (null? body) (void-element? tag))
-               (display " />" port)
+               (display " />\n" port)
                (begin
                  (display #\> port)
                  (for-each (lambda (x)
                              (sxml->html x port)) body)
-                 (format port "</~a>" tag))))
+                 (format port "</~a>\n" tag))))
 
            (define (doctype->html doctype port)
-             (format port "<!DOCTYPE ~a>" doctype))
+             (format port "<!DOCTYPE ~a>\n" doctype))
 
            (define (sxml->html tree port)
              ;Write the serialized HTML form of TREE to PORT.

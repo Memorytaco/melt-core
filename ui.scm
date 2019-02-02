@@ -2,9 +2,8 @@
          (export flax)
          (import (scheme)
                  (Flax utils)
-                 (Flax srfi match)
-                 ;(Flax command build)
-                 )
+				 (Flax command build)
+                 (Flax srfi match))
 
          ;; command list
          (define commands (list "build" "serve"))
@@ -34,6 +33,7 @@
              "Flax 0.0.9 ---  get the asset.scm done! fix string-trim procedure and add some usefull utilities. \n"
              "Flax 0.1.0 ---  has defined hook system. Although the system is really simple. need to renegrate all logic. \n"
              "Flax 0.1.1 ---  has refined the hook system. add some procedures. \n"
+			 "Flax 0.1.2 ---  now it can work fine! except lacking markdown support. Latter will refine it again! \n"
              "Flax 1.0.0 ---  navigate to chezscheme! \n"])
 
          (define (show-history)
@@ -65,13 +65,11 @@
                   [(or ("-vs") ("--version-history"))
                    (show-history)]
                   [("build")
-                  ;  (build)
-                   (display "not ready yet!\n")]
+                   (build "env.scm")]
                   [("build" (or "-h" "--help"))
-                  ;  (show-build-help)
-                   (display "build help\n")]
+				   (show-build-help)]
                   [("build" args ...)
-                  ;  (build (car args))
+				   (build (car args))
                    (display "build with many args\n")
                    (map display (map string-append args (make-list (length args) "\n")))]
                   [("serve")

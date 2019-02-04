@@ -25,8 +25,7 @@
 			'()))))
   
   (define (post-ref key post)
-	(display "im in post-ref")
-    (assq-ref key (post-metadata post)))
+	(assq-ref key (post-metadata post)))
   
   
   ;; read meta data

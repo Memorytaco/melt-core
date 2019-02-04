@@ -1,4 +1,4 @@
-(library (Flax reader reader)
+(library (Flax parser parser)
   (export make-reader-matcher
           reader-available?)
   (import (scheme)
@@ -10,15 +10,16 @@
   ;; make file extension matcher
   ;; return the function which returns #t if the file's
   ;; extension is ext
-  (define make-reader-matcher
+  (define make-parser-matcher
     (lambda (ext)
-      (lambda (arg)
-        (string=? ext (path-extension arg)))))
+      (lambda (path)
+        (string=? ext (path-extension path)))))
   
   ;; return the reader if the extension is
   ;; matched or #f when reader is not available
-  (define reader-available?
-    (lambda (reader-list name)
+  (define parser-query
+    (lambda ())
+(lambda (reader-list name)
       (display "in reader-available!\n")
 	  (cond
        [(eq? '() reader-list)

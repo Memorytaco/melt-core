@@ -34,7 +34,8 @@
              "Flax 0.1.0 ---  has defined hook system. Although the system is really simple. need to renegrate all logic. \n"
              "Flax 0.1.1 ---  has refined the hook system. add some procedures. \n"
 			 "Flax 0.1.2 ---  now it can work fine! except lacking markdown support. Latter will refine it again! \n"
-             "Flax 1.0.0 ---  navigate to chezscheme! \n"])
+			 "Flax 0.2.0 ---  navigate to chezscheme! \n"
+			 "Flax 0.2.1 ---  adding new feature, refactor the whole program again! \n"])
 
          (define (show-history)
            (while (eq? '() version-history)

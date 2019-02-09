@@ -6,19 +6,18 @@
 		  (Flax utils)
 		  (Flax page)
 		  (Flax post)
-		  (Flax reader reader)
+		  (Flax parser parser)
+		  (Flax data)
 		  (Flax structure))
 
   (import type-chain)
   (import type-hook)
-  (import type-site)
   (import type-process)
 
 
   (define chain (init-chain #t
-							(lambda ()
-								 (display "Building ...\n"))
-							(init-empty-data)))
+							(lambda () (display "Building ...\n"))
+							(create-data)))
   
   (define (build chain)
 	(display "in build command!\n")
@@ -64,9 +63,9 @@
 	(display "in asset-install procedure!\n")
 	(let ((asset (site-asset (data-query 'site chain))))
 	  (asset-cp asset)))
-
+  
   (add-hook chain (create-hook 'asset-install 'proc `(,asset-install . (,(data-query 'chain chain)))))
   
   (add-hook chain (create-hook 'build 'proc `(,build . (,(data-query 'chain chain)))))
-
+  
   )

@@ -19,7 +19,7 @@
          ;; -- the third number is the branch version number. Every bug fix or feature
          ;;    added or some procedure updated will update the number.
          (define (show-version)
-           (format #t "Flax version 0.1.0 ~%"))
+           (format #t "Flax version 0.2.2 ~%"))
 
          (define version-history
            '["Flax 0.0.1 ---  complete the basic functions, split the process procedure out. \n"
@@ -33,9 +33,10 @@
              "Flax 0.0.9 ---  get the asset.scm done! fix string-trim procedure and add some usefull utilities. \n"
              "Flax 0.1.0 ---  has defined hook system. Although the system is really simple. need to renegrate all logic. \n"
              "Flax 0.1.1 ---  has refined the hook system. add some procedures. \n"
-			 "Flax 0.1.2 ---  now it can work fine! except lacking markdown support. Latter will refine it again! \n"
-			 "Flax 0.2.0 ---  navigate to chezscheme! \n"
-			 "Flax 0.2.1 ---  adding new feature, refactor the whole program again! \n"])
+             "Flax 0.1.2 ---  now it can work fine! except lacking markdown support. Latter will refine it again! \n"
+             "Flax 0.2.0 ---  navigate to chezscheme! \n"
+             "Flax 0.2.1 ---  adding new feature, refactor the whole program again! \n"
+			 "Flax 0.2.2 ---  add data structure and refine hook system! \n"])
 
          (define (show-history)
            (while (eq? '() version-history)

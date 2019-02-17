@@ -1,6 +1,5 @@
 (library (Flax utils)
   (export get-absolute-path
-          copy-file
           decompose-path-name
           compose-path-name
           identity
@@ -28,9 +27,6 @@
   (define identity
     (lambda (obj)
       obj))
-  
-  ;; library body  ---------------
-  (import type-site)
   
   (define (directory-separator-string)
     (string (directory-separator)))
@@ -198,23 +194,7 @@
         (directory-list (cd))]
        [else (map directory-list path)])))
   
-  ;; copy file
-  ;; the mode is for the output port
-  (define copy-file
-    (case-lambda
-      [(src-file target-file)
-       (let ((input-port (open-file-input-port src-file))
-             (output-port (open-file-output-port target-file)))
-         (put-bytevector output-port (get-bytevector-all input-port))
-         (close-port input-port)
-         (close-port output-port))]
-      [(src-file target-file mode)
-       (let ((input-port (open-file-input-port src-file))
-             (output-port (open-file-output-port target-file mode)))
-         (put-bytevector output-port (get-bytevector-all input-port))
-         (close-port input-port)
-         (close-port output-port))]))
-  
+  ;; need to be refined!!!!
   (define alist?
     (lambda (arg)
       (cond
@@ -223,7 +203,8 @@
        [(atom? arg)
         #f]
        [(list? arg)
-        (not (list? (car arg)))])))
+        (and (not (atom? (car arg)))
+			 (not (list? (car arg))))])))
   
   (define element-exist?
     (lambda (element arg-list)

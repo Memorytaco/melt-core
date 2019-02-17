@@ -1,8 +1,7 @@
 (library (Flax structure)
   (export type-parser
           type-post
-          type-render
-		  type-process
+          type-renderer
           type-page
 
 		  type-site
@@ -10,28 +9,30 @@
 
 		  type-hook
 		  type-trigger
-		  type-chain)
+		  type-chain
+		  type-data)
   
   (import (scheme))
   
+  ;; it now is an uniform utility! can be stroed in
+  ;; one place and use multiple times!
   (module type-parser
           [make-parser
 		   parser?
 		   parser-type
 		   parser-proc
-		   parser-resr
 		   parser-refp]
           (define-record-type
               parser
             (nongenerative flax-parser)
             (fields
-			 ;; type is a symbol, mark the type of the parser
-             (immutable type parser-type)
+			 ;; the type is an unproper dot list like (html . #:proc)
+			 ;; car of type is a symbol, mark the type of the parser
+			 ;; the #:proc is a procedure to filter file and match parser
+			 (immutable type parser-type)
 			 ;; proc is the procedure which take charge with
 			 ;; the source file
              (immutable proc parser-proc)
-			 ;; resr==>resource : store the data parsed
-			 (immutable resr parser-resr)
 			 ;; refp==>resource procedure : update the resource file
 			 ;; it need to be designed carefully
 			 (immutable refp parser-refp))))
@@ -44,6 +45,8 @@
   ;; need. So the data stored in a post is all
   ;; the data one post needs. No more change but
   ;; use.
+
+  ;; the meta and attr is all an assoc list
   (module type-post
           [make-post
 		   post?
@@ -61,35 +64,24 @@
              (mutable cont post-cont cont-set!))))
 
   ;; used to render the page component
-  (module type-render
-		  [make-render
-		   render?
-		   render-type
-		   render-proc proc-set!
-		   render-data data-set!]
+  (module type-renderer
+		  [make-renderer
+		   renderer?
+		   renderer-type
+		   renderer-proc proc-set!
+		   renderer-data data-set!]
 		  (define-record-type
-			  render
-			(nongenerative flax-render)
+			  renderer
+			(nongenerative flax-renderer)
 			(fields
-			 (immutable type render-type)
-			 (mutable proc render-proc proc-set!)
-			 (mutable data render-data data-set!))))
-
-  
-  (module type-process
-          [make-process
-		   process?
-		   process-key
-		   process-proc]
-          (define-record-type
-              process
-            (nongenerative flax-process)
-            (fields
-             ;; you'd better set the key as symbol
-             (immutable key process-key)
-             ;; the processor is a procedure which process the sxml tree
-             (immutable proc process-proc))))
-  
+			 ;; the type is an unique id to distinguish the render
+			 (immutable type renderer-type)
+			 ;; proc==>process process function used to render the
+			 ;; page
+			 (mutable proc renderer-proc proc-set!)
+			 ;; data is the data which maybe be needed
+			 ;; it is the same as chain data!
+			 (mutable data renderer-data data-set!))))
   
   ;; page is used to compose one page
   ;; and use the proc to write ti to disk
@@ -101,7 +93,8 @@
 		   page?
 		   page-comt comt-set!
 		   page-proc proc-set!
-		   page-cont cont-set!]
+		   page-cont cont-set!
+		   page-attr attr-set!]
           (define-record-type
               page
             (nongenerative flax-page)
@@ -115,9 +108,12 @@
 			 ;; needs to compose the page from components first.
 			 ;; cont==>content : it store the full sxml tree
 			 ;; of the page.
+			 ;; attr==>attribute : it is an assoc list contains some extra
+			 ;; settings on page
              (mutable comt page-comt comt-set!)
              (mutable proc page-proc proc-set!)
-			 (mutable cont page-cont cont-set!))))
+			 (mutable cont page-cont cont-set!)
+			 (mutable attr page-attr attr-set!))))
 
   (module type-site
           [make-site
@@ -129,15 +125,14 @@
               site
             (nongenerative flax-site)
             (fields
-			 ;; 
+			 ;; it store a type data. the symbol is an key word which
+			 ;; specifics the purpose of the 
 			 (mutable layout site-layout layout-set!)
 			 ;; comt==>component : it describes the composement of the
 			 ;; site and the action on each component.
 			 (mutable comt site-comt comt-set!)
-             ;; attr==>attribute : it is the physic attr of the site
-			 ;; example the asset, the posts-directory
-			 ;; and the target-directory. anyway remember
-			 ;; the cache directory
+             ;; it is the attribute of the site like domain name
+			 ;; it is a data type
 			 (mutable attr site-attr attr-set!))))
   
   (module type-asset
@@ -179,15 +174,15 @@
   ;; the trigger module for future
   (module type-trigger
 		  [make-trigger
-		   tirgger?
-		   tirgger-cond
+		   trigger?
+		   trigger-cond
 		   trigger-act]
 		  (define-record-type
 			  trigger
 			(nongenerative flax-trigger)
 			(fields
 			 (immutable cond trigger-cond)
-			 (immutable act  tirgger-act))))
+			 (immutable act  trigger-act))))
 
   
   ;; define the execution priority and data transform
@@ -211,5 +206,20 @@
              ;; and car is the key list
              ;; while cdr is an assoc list
              (mutable data chain-data chain-data-set!))))
+
+  (module type-data
+		  [make-data
+		   data?
+		   data-keys data-keys-set!
+		   data-cont data-cont-set!]
+		  (define-record-type
+			  data
+			(nongenerative flax-data)
+			(fields
+			 ;; a list of symbols
+			 (mutable keys data-keys data-keys-set!)
+			 ;; an assoc list which contains keys in the
+			 ;; keys field
+			 (mutable cont data-cont data-cont-set!))))
   
   )

@@ -1,6 +1,6 @@
 #!chezscheme
 ;; convert sxml to html
-(library (Flax reader sxml)
+(library (Flax parser sxml)
          (export sxml->html
                  sxml->html-string)
          (import (scheme)

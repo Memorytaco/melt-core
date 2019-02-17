@@ -2,37 +2,43 @@
   (export page
 		  create-writer)
   (import (scheme)
-          (Flax structure)
           (Flax srfi match)
+          (Flax parser sxml)
           (Flax utils)
-		  (Flax process)
           (Flax asset)
-          (Flax reader sxml)
+		  (Flax renderer)
+          (Flax structure)
           (Flax product))
   
   (import type-page)
-  (import type-process)
   (import type-post)
   
-  ;; create the default writer for page
+  ;; convert the sxml to html and write it to disk
   (define (create-writer)
-    (lambda (sxml-tree output)
+    (lambda (sxml output)
       (let ((port (open-output-file output 'replace)))
         (sxml->html sxml-tree port)
         (close-output-port port))))
   
-  ;; write the rendered page to one directory
-  ;; the directory can be a path
-  ;; directory must be absolute path!!!
+  ;; it requires a 'src-path attr in page
+  ;; write the src page into the directory
   (define (write-page page directory)
-    (let* ((name (page-name page))
-		  (content (page-content page))
-		  (writer (page-writer page))
-		  (output (string-append directory 
-                                 (directory-separator-string) 
-                                 name)))
-	  (mkdir-r (path-parent output))
-	  (writer content output)))
+    (let ((obj-path (cdr (assq 'src-path (page-attr page))))
+		  (content (page-content page)))
+	  (mkdir-r (string-append directory "/" (path-parent obj-path)))
+	  ((cdr (page-proc page)) content
+	   (string-append directory "/" obj-path))))
+
+  (define create-proc
+	(lambda (compose-procedure output-directory)
+	  ))
+
+  (define create-page
+	(case-lambda
+	  [(components proc cont attr)
+	   ]
+	  [()
+	   ]))
   
   ;; build the page obj and write it to disk
   (define page
@@ -41,6 +47,6 @@
              (page* (make-page (string-append (path-root (post-name post))
                                               ".html")
                                ((procedure-ref 'meta process-layer)
-								  process-layer post)
+								process-layer post)
                                writer)))
         (write-page page* directory)))))

@@ -1,23 +1,6 @@
 (library (Flax srfi srfi)
-  (export load-module
-          define-assoc-lambda)
+  (export define-assoc-lambda)
   (import (scheme))
-  
-  
-  ;; return the module both with a list of
-  ;; symbols in the module
-  (define load-module
-    (case-lambda
-      ;; This case, the file name must be same as module name
-      [(name)
-       (begin (load (string-append name ".scm"))
-              (values #t))]
-      ;; module name can be different from file name
-      [(name path)
-       (if (file-regular? path)
-           (begin (load path)
-                  (values #t))
-           #f)]))
   
   
   ;; define a procedure receive assoc-list
@@ -28,8 +11,8 @@
   ;; (define another-x (define-assoc-lambda x '(y z) '("this is y\n" "this is z\n")))
   ;; (another-x) ==> this is y
   ;;                 this is z
-         ;; (another-x '((y . "this is new y\n"))) ==> this is new y
-  ;;                                                   this is z
+  ;; (another-x '((y . "this is new y\n"))) ==> this is new y
+  ;;                                            this is z
   (define define-assoc-lambda
     (lambda (procedure key-list default-value)
       (let ((default-assoc (map cons key-list default-value)))
@@ -54,7 +37,6 @@
                                          (cons (cons (car keys)
                                                      (car values))
                                                arg-list)))))
-                           (car arguments)))
-                     ))))))
-    
+                           (car arguments)))))))))
+
   )

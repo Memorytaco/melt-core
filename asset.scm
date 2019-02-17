@@ -1,12 +1,10 @@
 (library (Flax asset)
          (export asset-cp
                  asset-list-cp
-                 cp-f
-                 cp-rf
                  mkdir-r)
          (import (scheme)
                  (Flax srfi match)
-                 (Flax utils)
+                 (Flax lib file)
                  (Flax structure))
 
          (import type-asset)
@@ -23,32 +21,6 @@
 
          (define (asset-list-cp asset-list)
            (map asset-cp asset-list))
-
-         ;; accept strings as arguments
-         ;; if the target exsites, replace it.
-         (define (cp-f src-file target-file)
-           (if (not (file-exists? src-file)) (error src-file "File not exists!"))
-           (mkdir-r (path-parent target-file))
-           (copy-file src-file target-file (file-options no-fail)))
-
-         ;; copy recursively and force
-         (define (cp-rf src-file target-file)
-           (if (file-exists? src-file)
-               (cond
-                 [(file-regular? src-file)
-                  (cp-f src-file target-file)]
-                 [(file-directory? src-file)
-                  (mkdir-r target-file)
-                  (do ((file-list (directory-list src-file) (cdr file-list))
-                       (element (car (directory-list src-file)) (car file-list)))
-                    ((null? file-list)
-                     (cp-rf (string-append src-file (directory-separator-string) element)
-                            (string-append target-file (directory-separator-string) element))
-                     #t)
-                    (cp-rf (string-append src-file (directory-separator-string) element)
-                           (string-append target-file (directory-separator-string) element)))])
-               (error src-file "File not exists")))
-
 
          ;; create directory recursively
          ;; if one directory exists, just enter it and create rest directory

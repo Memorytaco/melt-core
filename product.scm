@@ -1,5 +1,5 @@
 #!chezscheme
-(library (Flax product)
+(library (melt product)
   (export sxml-parser
 		  commonmark-parser)
   (import (scheme))
@@ -7,9 +7,9 @@
   (module sxml-parser
 		  [sxml-parser]
 
-		  (import (Flax asset))
-		  (import (Flax utils))
-		  (import (Flax parser parser))
+		  (import (melt asset))
+		  (import (melt utils))
+		  (import (melt parser parser))
 		  
 		  ;; define default sxml parser
 		  (define sxml-parser
@@ -38,8 +38,8 @@
 		   read-metadata-headers
 		   parser-metadata]
 
-		  (import (Flax parser parser))
-		  (import (Flax utils))
+		  (import (melt parser parser))
+		  (import (melt utils))
 		  
 		  ;; read meta data
 		  (define %metadata-parsers

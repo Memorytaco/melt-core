@@ -1,4 +1,4 @@
-(library (Flax utils)
+(library (melt utils)
   (export get-absolute-path
           decompose-path-name
           compose-path-name
@@ -18,7 +18,7 @@
           list-directory
           while)
   (import (scheme)
-          (Flax structure))
+          (melt structure))
 
   (define (make-alist keys values)
 	(map cons keys values))

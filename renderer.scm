@@ -1,9 +1,9 @@
-(library (Flax renderer)
+(library (melt renderer)
   (export create-renderer)
   (import (scheme)
-		  (Flax structure)
-		  (Flax invoke)
-		  (Flax data))
+		  (melt structure)
+		  (melt invoke)
+		  (melt data))
 
   (import type-renderer)
 

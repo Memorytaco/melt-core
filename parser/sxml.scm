@@ -1,11 +1,11 @@
 #!chezscheme
 ;; convert sxml to html
-(library (Flax parser sxml)
+(library (melt parser sxml)
          (export sxml->html
                  sxml->html-string)
          (import (scheme)
-                 (Flax utils)
-                 (Flax srfi match))
+                 (melt utils)
+                 (melt srfi match))
 
 
          (define %void-elements

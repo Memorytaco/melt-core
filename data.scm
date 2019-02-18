@@ -1,9 +1,9 @@
-(library (Flax data)
+(library (melt data)
   (export create-data
 		  update-data!)
   (import (scheme)
-		  (Flax structure)
-		  (Flax utils))
+		  (melt structure)
+		  (melt utils))
 
   (import type-data)
 

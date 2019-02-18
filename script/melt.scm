@@ -1,6 +1,6 @@
 #!/usr/bin/scheme --script
 
-(import (Flax ui))
+(import (melt ui))
 
 ;; the main execution script
-(apply flax (command-line))
+(apply melt (command-line))

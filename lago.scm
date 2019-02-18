@@ -1,4 +1,4 @@
-(library (Flax lago)
+(library (melt lago)
   (export )
   (import (scheme))
 

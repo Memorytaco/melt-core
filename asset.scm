@@ -1,11 +1,11 @@
-(library (Flax asset)
+(library (melt asset)
          (export asset-cp
                  asset-list-cp
                  mkdir-r)
          (import (scheme)
-                 (Flax srfi match)
-                 (Flax lib file)
-                 (Flax structure))
+                 (melt srfi match)
+                 (melt lib file)
+                 (melt structure))
 
          (import type-asset)
 

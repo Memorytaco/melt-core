@@ -1,11 +1,11 @@
-(library (Flax parser parser)
+(library (melt parser parser)
   (export make-filter
 		  make-type
 		  create-parser
           parser-query)
   (import (scheme)
-          (Flax structure)
-          (Flax utils))
+          (melt structure)
+          (melt utils))
   
   (import type-parser)
   

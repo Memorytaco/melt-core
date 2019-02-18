@@ -1,4 +1,4 @@
-(library (Flax structure)
+(library (melt structure)
   (export type-parser
           type-post
           type-renderer
@@ -24,7 +24,7 @@
 		   parser-refp]
           (define-record-type
               parser
-            (nongenerative flax-parser)
+            (nongenerative melt-parser)
             (fields
 			 ;; the type is an unproper dot list like (html . #:proc)
 			 ;; car of type is a symbol, mark the type of the parser
@@ -55,7 +55,7 @@
 		   post-cont cont-set!]
           (define-record-type
               post
-            (nongenerative flax-post)
+            (nongenerative melt-post)
             (fields
 			 ;; it contains the attribute about the
 			 ;; source file!
@@ -72,7 +72,7 @@
 		   renderer-data data-set!]
 		  (define-record-type
 			  renderer
-			(nongenerative flax-renderer)
+			(nongenerative melt-renderer)
 			(fields
 			 ;; the type is an unique id to distinguish the render
 			 (immutable type renderer-type)
@@ -97,7 +97,7 @@
 		   page-attr attr-set!]
           (define-record-type
               page
-            (nongenerative flax-page)
+            (nongenerative melt-page)
             (fields
 			 ;; comt==>component : it store the components of one
 			 ;; page (including some metadata), anything one page
@@ -123,7 +123,7 @@
 		   site-attr attr-set!]
           (define-record-type
               site
-            (nongenerative flax-site)
+            (nongenerative melt-site)
             (fields
 			 ;; it store a type data. the symbol is an key word which
 			 ;; specifics the purpose of the 
@@ -142,7 +142,7 @@
            asset-target]
           (define-record-type
               asset
-            (nongenerative flax-asset)
+            (nongenerative melt-asset)
             (fields
              (immutable source asset-source)
              (immutable target asset-target))))
@@ -157,7 +157,7 @@
 		   hook-data hook-data-set!]
           (define-record-type
               hook
-            (nongenerative flax-hook)
+            (nongenerative melt-hook)
             (fields
              ;; if the type is 'data, proc-arg contain data
              ;; else if the type is 'proc, proc-arg is defined as following
@@ -179,7 +179,7 @@
 		   trigger-act]
 		  (define-record-type
 			  trigger
-			(nongenerative flax-trigger)
+			(nongenerative melt-trigger)
 			(fields
 			 (immutable cond trigger-cond)
 			 (immutable act  trigger-act))))
@@ -194,7 +194,7 @@
 		   chain-data chain-data-set!]
           (define-record-type
               chain
-            (nongenerative flax-chain)
+            (nongenerative melt-chain)
             (fields
              ;; condition must be #t or #f
              ;; or a procedure which return #t
@@ -214,7 +214,7 @@
 		   data-cont data-cont-set!]
 		  (define-record-type
 			  data
-			(nongenerative flax-data)
+			(nongenerative melt-data)
 			(fields
 			 ;; a list of symbols
 			 (mutable keys data-keys data-keys-set!)

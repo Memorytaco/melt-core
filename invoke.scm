@@ -1,5 +1,5 @@
 #!chezscheme
-(library (Flax invoke)
+(library (melt invoke)
   (export init-chain
           execute-chain
           chain-data-keys
@@ -18,9 +18,9 @@
           get-hook-alist
           add-hook!)
   (import (scheme)
-          (Flax utils)
-          (Flax structure)
-		  (Flax data))
+          (melt utils)
+          (melt structure)
+		  (melt data))
   
   (import type-hook)
   (import type-chain)

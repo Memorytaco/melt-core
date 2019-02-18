@@ -1,10 +1,10 @@
-(library (Flax post)
+(library (melt post)
   (export parse-post
           post-ref)
   (import (scheme)
-          (Flax structure)
-          (Flax utils)
-          (Flax parser parser))
+          (melt structure)
+          (melt utils)
+          (melt parser parser))
   
   (import type-post)
   (import type-parser)

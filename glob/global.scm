@@ -1,3 +1,4 @@
+#!chezscheme
 (library (melt glob global)
   (export chain)
   (import (scheme)
@@ -5,15 +6,14 @@
 		  (melt asset)
 		  (melt utils)
 		  (melt page)
-		  (Flax post)
-		  (Flax parser parser)
-		  (Flax data)
-		  (Flax structure))
+		  (melt post)
+		  (melt parser parser)
+		  (melt data)
+		  (melt structure))
 
   (import type-chain)
   (import type-hook)
-  (import type-process)
-
+  (import type-site)
 
   (define chain (init-chain #t
 							(lambda () (display "Building ...\n"))
@@ -30,10 +30,6 @@
 			(define (build-r path)
 			  (cond
 			   [(file-regular? path)
-				(display "\nnow in regular file path\n")
-				(display "path is")
-				(display path)
-				(display "\n")
 				(if (reader-available? readers path)
 					(page (read-post path readers)
 						  build-directory
@@ -44,13 +40,6 @@
 				(display (string-append "current path is: " path "\n"))
 				(do ((directorys (directory-list path) (cdr directorys)))
 					((null? directorys) (display "this layers posts have been builded!\n"))
-				  (begin
-					(display "current directory list: ")
-					(display directorys)
-					(display "\n")
-					(display (string-append path
-											(directory-separator-string)
-											(car directorys))))
 				  (build-r (string-append path
 										  (directory-separator-string)
 										  (car directorys))))]))

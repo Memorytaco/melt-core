@@ -1,9 +1,15 @@
-(library (Flax lib file)
+(library (melt lib file)
   (export copy-file
 		  cp-f
-		  cp-rf)
-  (import (scheme))
+		  cp-rf
+		  mkdir-r
+		  directory-separator-string)
+  (import (scheme)
+		  (melt utils))
 
+  (define (directory-separator-string)
+    (string (directory-separator)))
+  
   ;; copy file
   ;; the mode is for the output port
   (define copy-file
@@ -46,5 +52,25 @@
             (cp-rf (string-append src-file (directory-separator-string) element)
                    (string-append target-file (directory-separator-string) element)))])
         (error src-file "File not exists")))
-  
+
+  ;; create directory recursively
+  ;; if one directory exists, just enter it and create rest directory
+  ;; it will never report an error!!
+  (define (mkdir-r dir)
+	;; Create the dir just like use makedir bash command but clever
+    (define dir-list (decompose-path-name dir))
+    (let ((file-name (if (path-absolute? dir)
+                         (string-append "/" (car dir-list))
+                         (car dir-list))))
+      (while (eq? '() dir-list)
+        (if (file-exists? file-name)
+            (if (not (file-directory? file-name))
+                (begin
+                  (format (current-error-port) "There exists conficts file!!~%")
+                  (break)))
+            (mkdir file-name))
+        (set! dir-list (cdr dir-list))
+        (if (not (eq? '() dir-list))
+            (set! file-name (string-append file-name "/" (car dir-list)))))
+      #t))
   )

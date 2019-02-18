@@ -13,7 +13,6 @@
           alist?
           alist-cons
           string-split-dual
-          directory-separator-string
           string-trim
           list-directory
           while)
@@ -27,9 +26,6 @@
   (define identity
     (lambda (obj)
       obj))
-  
-  (define (directory-separator-string)
-    (string (directory-separator)))
   
   ;; return the absolute path of the file
   (define (get-absolute-path file-name)

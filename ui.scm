@@ -5,6 +5,8 @@
                  (melt utils)
 				 (melt lib color)
 				 (melt version)
+				 (melt command)
+				 (melt structure)
                  (melt srfi match))
 
          (define (show-version)
@@ -18,6 +20,13 @@
            (cdisplay (ctext "[37m" "This is melt! Meta Excellent Local Note System.\n")
 					 (ctext "[37m" "Please use \"-h\" or \"--help\" to get further help.\nFor more information please follow")
 					 (ctext "[36m" " github io page.\n")))		 
+
+		 (define (welcome)
+		   (cdisplay (ctext "[38;5;133m" "Fount file .melt\n"))
+		   (cdisplay (ctext "[1A" "")
+					 (ctext "[100D" ""))
+		   (sleep (make-time 'time-duration 0 1))
+		   (cdisplay (ctext "[38;5;135m" "Now, Let's start! \n")))
 
          ;; basic help information
          (define (help)
@@ -46,13 +55,14 @@
 			[(file-exists? "melt.scm")
 			 (load "melt.scm")]
 			[else (cdisplay (ctext "[38;5;196m" "Error! ")
-							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))]))
+							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))])
+		   
+		   (cdisplay (ctext "[38;5;10m" "\n==========\n"))
+		   (show-commands %builtin-commands)
+		   (show-commands %user-commands)
+		   
+		   )
 
-		 (define (welcome)
-		   (cdisplay (ctext "[38;5;133m" "Fount file .melt\n"))
-		   (cdisplay (ctext "[1A" "")
-					 (ctext "[100D" ""))
-		   (sleep (make-time 'time-duration 0 1))
-		   (cdisplay (ctext "[38;5;135m" "Now, Let's start! \n")))
+		 
 		 
          )

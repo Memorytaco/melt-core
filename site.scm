@@ -1,8 +1,8 @@
-(library (Flax site)
+(library (melt site)
   (export site)
   (import (scheme)
-          (Flax structure)
-          (Flax utils))
+          (melt structure)
+          (melt utils))
   
   (import type-site)
 

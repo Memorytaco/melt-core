@@ -5,6 +5,7 @@
           (melt srfi match)
           (melt parser sxml)
           (melt utils)
+		  (melt lib file)
           (melt asset)
 		  (melt renderer)
           (melt structure)
@@ -17,36 +18,21 @@
   (define (create-writer)
     (lambda (sxml output)
       (let ((port (open-output-file output 'replace)))
-        (sxml->html sxml-tree port)
+        (sxml->html sxml port)
         (close-output-port port))))
   
   ;; it requires a 'src-path attr in page
   ;; write the src page into the directory
   (define (write-page page directory)
     (let ((obj-path (cdr (assq 'src-path (page-attr page))))
-		  (content (page-content page)))
+		  (content (page-cont page)))
 	  (mkdir-r (string-append directory "/" (path-parent obj-path)))
 	  ((cdr (page-proc page)) content
 	   (string-append directory "/" obj-path))))
 
-  (define create-proc
-	(lambda (compose-procedure output-directory)
-	  ))
-
-  (define create-page
-	(case-lambda
-	  [(components proc cont attr)
-	   ]
-	  [()
-	   ]))
-  
+    
   ;; build the page obj and write it to disk
   (define page
-    (lambda (post directory process-layer)
-      (let* ((writer (create-writer))
-             (page* (make-page (string-append (path-root (post-name post))
-                                              ".html")
-                               ((procedure-ref 'meta process-layer)
-								process-layer post)
-                               writer)))
-        (write-page page* directory)))))
+    (lambda ()
+	  (display "not ready!\n")))
+  )

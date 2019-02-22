@@ -8,6 +8,7 @@
 		  [sxml-parser]
 
 		  (import (melt asset))
+		  (import (melt lib file))
 		  (import (melt utils))
 		  (import (melt parser parser))
 		  
@@ -36,7 +37,7 @@
           [commonmark-parser
 		   register-metadata-parser!
 		   read-metadata-headers
-		   parser-metadata]
+		   parse-metadata]
 
 		  (import (melt parser parser))
 		  (import (melt utils))

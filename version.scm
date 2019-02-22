@@ -38,7 +38,8 @@
 	  ("0.1.2" . "add data structure and refine hook system!")
 	  ("0.1.3" . "temp version, refactor the whole structure!")
 	  ("0.1.4" . "change flax to melt.")
-	  ("0.1.5" . "add commandline color! Cool!")])
+	  ("0.1.5" . "add commandline color! Cool!")
+	  ("0.1.6" . "add subcommand system!")])
 
   
   )

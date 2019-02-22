@@ -12,7 +12,7 @@
          (define (show-version)
            (display (string-append (ctext "[37;1m" "melt")
 								   (ctext "[38;5;15m" " version ")
-								   (ctext "[38;5;165m" "0.1.5")
+								   (ctext "[38;5;165m" "0.1.6")
 								   "\n")))
 
 		 ;; the basic information
@@ -57,7 +57,8 @@
 			[else (cdisplay (ctext "[38;5;196m" "Error! ")
 							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))])
 		   
-		   (cdisplay (ctext "[38;5;10m" "\n==========\n"))
+		   (cdisplay (ctext "[38;5;10m" "\n==========")
+					 (ctext "[38;5;142m" "  Available commands :\n"))
 		   (show-commands %builtin-commands)
 		   (show-commands %user-commands)
 		   

@@ -10,7 +10,9 @@
 		  type-hook
 		  type-trigger
 		  type-chain
-		  type-data)
+		  type-data
+
+		  type-command)
   
   (import (scheme))
   
@@ -26,9 +28,8 @@
               parser
             (nongenerative melt-parser)
             (fields
-			 ;; the type is an unproper dot list like (html . #:proc)
-			 ;; car of type is a symbol, mark the type of the parser
-			 ;; the #:proc is a procedure to filter file and match parser
+			 ;; the symbol which means the file type
+			 ;; the symbol is used as file extension
 			 (immutable type parser-type)
 			 ;; proc is the procedure which take charge with
 			 ;; the source file
@@ -50,18 +51,18 @@
   (module type-post
           [make-post
 		   post?
-		   post-meta meta-set!
-		   post-attr attr-set!
-		   post-cont cont-set!]
+		   post-meta post-meta-set!
+		   post-attr post-attr-set!
+		   post-cont post-cont-set!]
           (define-record-type
               post
             (nongenerative melt-post)
             (fields
 			 ;; it contains the attribute about the
 			 ;; source file!
-             (mutable meta post-meta meta-set!)
-             (mutable attr post-attr attr-set!)
-             (mutable cont post-cont cont-set!))))
+             (mutable meta post-meta post-meta-set!)
+             (mutable attr post-attr post-attr-set!)
+             (mutable cont post-cont post-cont-set!))))
 
   ;; used to render the page component
   (module type-renderer
@@ -91,10 +92,10 @@
   (module type-page
           [make-page
 		   page?
-		   page-comt comt-set!
-		   page-proc proc-set!
-		   page-cont cont-set!
-		   page-attr attr-set!]
+		   page-comt page-comt-set!
+		   page-proc page-proc-set!
+		   page-cont page-cont-set!
+		   page-attr page-attr-set!]
           (define-record-type
               page
             (nongenerative melt-page)
@@ -110,10 +111,10 @@
 			 ;; of the page.
 			 ;; attr==>attribute : it is an assoc list contains some extra
 			 ;; settings on page
-             (mutable comt page-comt comt-set!)
-             (mutable proc page-proc proc-set!)
-			 (mutable cont page-cont cont-set!)
-			 (mutable attr page-attr attr-set!))))
+             (mutable comt page-comt page-comt-set!)
+             (mutable proc page-proc page-proc-set!)
+			 (mutable cont page-cont page-cont-set!)
+			 (mutable attr page-attr page-attr-set!))))
 
   (module type-site
           [make-site
@@ -221,5 +222,25 @@
 			 ;; an assoc list which contains keys in the
 			 ;; keys field
 			 (mutable cont data-cont data-cont-set!))))
+
+  (module type-command
+		  [make-command
+		   command?
+		   command-name
+		   command-desc
+		   command-proc
+		   command-help]
+		  (define-record-type
+			  command
+			(nongenerative melt-command)
+			(fields
+			 ;; symbol, which specifics string in command line
+			 (immutable name command-name)
+			 ;; string, one line description
+			 (immutable description command-desc)
+			 ;; procedure to do something
+			 (immutable procedure command-proc)
+			 ;; procedure, show the command options and help
+			 (immutable help command-help))))
   
   )

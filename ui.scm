@@ -10,7 +10,7 @@
          (define (show-version)
            (display (string-append (ctext "[37;1m" "melt")
 								   (ctext "[38;5;15m" " version ")
-								   (ctext "[38;5;165m" "0.2.5")
+								   (ctext "[38;5;165m" "0.1.5")
 								   "\n")))
 
 		 ;; the basic information
@@ -24,29 +24,35 @@
            (cdisplay (ctext "[37;1m" "melt ")
 					 (ctext "[38;5;102m" "[options] [command] [command options] \n"))
 		   (cdisplay (ctext "[38;5;80m" "available options are :")
-					 (ctext "[38;5;111m" " -h -v -vs\n")))
+					 (ctext "[38;5;111m" " -h | -v | -vs\n")))
 
 		 ;; user interface
          (define (melt arg . extra-args)
 		   (match extra-args
              [(or ("-h") ("--help"))
-              (help)]
+              (help)
+			  (exit 0)]
              [(or ("-v") ("--version")) 
-              (show-version)]
+              (show-version)
+			  (exit 0)]
              [(or ("-vs") ("--version-history"))
-              (show-version-history)]
+              (show-version-history)
+			  (exit 0)]
              (else (introduction)))
 
 		   (cond
 			[(file-exists? ".melt")
-			 (cdisplay (ctext "[38;5;135m" "Now, Let's start! \n"))]
+			 (welcome)]
 			[(file-exists? "melt.scm")
 			 (load "melt.scm")]
 			[else (cdisplay (ctext "[38;5;196m" "Error! ")
-							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))])
-		   
-		   )
+							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))]))
 
-		 
+		 (define (welcome)
+		   (cdisplay (ctext "[38;5;133m" "Fount file .melt\n"))
+		   (cdisplay (ctext "[1A" "")
+					 (ctext "[100D" ""))
+		   (sleep (make-time 'time-duration 0 1))
+		   (cdisplay (ctext "[38;5;135m" "Now, Let's start! \n")))
 		 
          )

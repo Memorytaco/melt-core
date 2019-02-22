@@ -1,4 +1,4 @@
-(library (Flax srfi match-simple)
+(library (melt srfi match-simple)
          (export match)
          (import (scheme))
 

@@ -1,4 +1,4 @@
-(library (Flax srfi srfi)
+(library (melt srfi srfi)
   (export define-assoc-lambda)
   (import (scheme))
   

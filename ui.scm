@@ -21,19 +21,39 @@
 					 (ctext "[37m" "Please use \"-h\" or \"--help\" to get further help.\nFor more information please follow")
 					 (ctext "[36m" " github io page.\n")))		 
 
-		 (define (welcome)
-		   (cdisplay (ctext "[38;5;133m" "Fount file .melt\n"))
-		   (cdisplay (ctext "[1A" "")
-					 (ctext "[100D" ""))
-		   (sleep (make-time 'time-duration 0 1))
-		   (cdisplay (ctext "[38;5;135m" "Now, Let's start! \n")))
-
          ;; basic help information
          (define (help)
            (cdisplay (ctext "[37;1m" "melt ")
 					 (ctext "[38;5;102m" "[options] [command] [command options] \n"))
 		   (cdisplay (ctext "[38;5;80m" "available options are :")
-					 (ctext "[38;5;111m" " -h | -v | -vs\n")))
+					 (ctext "[38;5;111m" " -h | -v | -vs | -l\n")))
+
+		 ;; to structure commands
+		 (define (welcome flag)
+		   (define (melt-load)
+			 (cond
+			  [(file-exists? ".melt")
+			   (load ".melt")
+			   #t]
+			  [(file-exists? "melt.scm")
+			   (load "melt.scm")
+			   #t]
+			  [else #f]))
+		   
+		   (if flag
+			   (if (melt-load)
+				   (begin
+					 (cdisplay (ctext "[38;5;10m" "==========")
+							   (ctext "[38;5;142m" "  Available commands :\n"))
+					 (show-commands %builtin-commands)				 
+					 (show-commands %user-commands))
+				   (begin
+					 (cdisplay (ctext "[38;5;196m" "Error! ")
+							   (ctext "[38;5;222m" "melt configure file doesn't exist! Only show builtin commands\n"))
+					 (cdisplay (ctext "[38;5;10m" "==========")
+							   (ctext "[38;5;142m" "  Available commands :\n"))
+					 (show-commands %builtin-commands)))
+			   (melt-load)))
 
 		 ;; user interface
          (define (melt arg . extra-args)
@@ -47,21 +67,27 @@
              [(or ("-vs") ("--version-history"))
               (show-version-history)
 			  (exit 0)]
-             (else (introduction)))
-
-		   (cond
-			[(file-exists? ".melt")
-			 (welcome)]
-			[(file-exists? "melt.scm")
-			 (load "melt.scm")]
-			[else (cdisplay (ctext "[38;5;196m" "Error! ")
-							(ctext "[38;5;222m" "melt configure file doesn't exist!\n"))])
-		   
-		   (cdisplay (ctext "[38;5;10m" "\n==========")
-					 (ctext "[38;5;142m" "  Available commands :\n"))
-		   (show-commands %builtin-commands)
-		   (show-commands %user-commands)
-		   
+			 [(or ("-l") ("--list"))
+			  (welcome #t)
+			  (exit 0)]
+             (else (if (null? extra-args)
+					   (begin (introduction)
+							  (exit 0))
+					   (welcome #f))))
+		   (let ((command-built (command-query (string->symbol (car extra-args))
+											   %builtin-commands))
+				 (command-user (command-query (string->symbol (car extra-args))
+											  %user-commands)))
+			 (cond
+			  [command-built
+			   (apply command-built
+					  (cdr extra-args))]
+			  [command-user
+			   (apply command-user
+					  (cdr extra-args))]
+			  [else
+			   (cdisplay (ctext "[38;5;99m" "Command not available!\n"))
+			   (welcome #t)]))
 		   )
 
 		 

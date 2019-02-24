@@ -1,5 +1,5 @@
 #!chezscheme
-(library (melt glob global)
+(library (melt glob)
   (export chain)
   (import (scheme)
 		  (melt invoke)

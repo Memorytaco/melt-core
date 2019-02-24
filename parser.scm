@@ -1,4 +1,4 @@
-(library (melt parser parser)
+(library (melt parser)
   (export parse
 		  create-parser)
   (import (scheme)

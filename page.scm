@@ -9,7 +9,7 @@
           (melt asset)
 		  (melt renderer)
           (melt structure)
-          (melt product))
+          (melt glob parser))
   
   (import type-page)
   (import type-post)

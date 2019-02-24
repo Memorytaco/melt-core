@@ -34,8 +34,9 @@
 			 ;; proc is the procedure which take charge with
 			 ;; the source file
              (immutable proc parser-proc)
-			 ;; refp==>resource procedure : update the resource file
-			 ;; it need to be designed carefully
+			 ;; refp==>refine procedure : update the resource file
+			 ;; it need to be designed carefully, because it will alter
+			 ;; the source file
 			 (immutable refp parser-refp))))
 
   ;; there maybe a lot of procedure between

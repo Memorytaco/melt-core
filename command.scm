@@ -7,7 +7,7 @@
 		  command-query)
   (import (scheme)
 		  (melt data)
-		  (melt lib color)
+		  (melt lib console)
 		  (melt structure))
 
   (import type-command)
@@ -34,11 +34,11 @@
   ;; display command names and its description
   (define (show-commands commands)
 	(define (show-command command)
-	  (cdisplay (ctext "[2C" "")
-				(ctext "[37;1m" (symbol->string (command-name command)))
+	  (gem-display (gem "[2C" "")
+				(gem "[37;1m" (symbol->string (command-name command)))
 				":\n"
-				(ctext "[5C" "")
-				(ctext "[38;5;166m" (command-desc command))
+				(gem "[5C" "")
+				(gem "[38;5;166m" (command-desc command))
 				"\n"))
 	(do ((command-list (data-keys commands) (cdr command-list)))
 		((null? command-list) #t)

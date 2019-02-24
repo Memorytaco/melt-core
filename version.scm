@@ -2,13 +2,13 @@
 (library (melt version)
   (export show-version-history)
   (import (scheme)
-		  (melt lib color))
+		  (melt lib console))
 
   (define (show-version-history)
 	(do ((cur-list version-history (cdr cur-list)))
 		((null? cur-list) #t)
 	  (let ((ver (car cur-list)))
-		(format #t (string-append "Melt " (ctext "[37m" (car ver)) " --- " (ctext "[38;5;220m" (cdr ver)) "~%")))))
+		(format #t (string-append "Melt " (gem "[37m" (car ver)) " --- " (gem "[38;5;220m" (cdr ver)) "~%")))))
 
   ;; there are three numbers in the version string
   ;; -- the first is the main version number, when it updates, this means

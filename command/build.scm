@@ -3,6 +3,7 @@
   (import (scheme)
           (melt structure)
 		  (melt invoke)
+		  (melt glob)
 		  (melt lib console)
           (melt utils))
   
@@ -23,8 +24,7 @@
     (if (file-exists? user-file)
         (begin
 		  (load user-file)
-		  ;(execute-chain chain)
-		  )
+		  (execute-chain %%chain))
 		(begin
           (format #t "Coundn't find config file !! ~%expect ~a but got nothing !~%" (basename user-file)))))
 

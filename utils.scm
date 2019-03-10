@@ -190,14 +190,15 @@
        [else (map directory-list path)])))
   
   ;; need to be refined!!!!
-  (define alist?
-    (lambda (arg)
-      (cond
-       [(null? arg)
-        #t]
-       [(atom? arg)
-        #f]
-       [(list? arg)
-        (and (not (atom? (car arg)))
-			 (not (list? (car arg))))])))
+  (define (alist? arg)
+	(call/cc
+	 (lambda (cc)
+	   (if (atom? arg)
+		   (cc #f))
+	   (do ((arg-list arg (cdr arg-list)))
+		   ((null? arg-list) #t)
+		 (if (pair? (car arg-list))
+			 #t
+			 (cc #f))))) 
+	)
   )

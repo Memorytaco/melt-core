@@ -61,6 +61,8 @@
             (fields
 			 ;; it contains the attribute about the
 			 ;; source file!
+			 ;; the meta and attr are all the data
+			 ;; but cont is sxml tree
              (mutable meta post-meta post-meta-set!)
              (mutable attr post-attr post-attr-set!)
              (mutable cont post-cont post-cont-set!))))
@@ -81,8 +83,7 @@
 			 ;; proc==>process process function used to render the
 			 ;; page
 			 (mutable proc renderer-proc proc-set!)
-			 ;; data is the data which maybe be needed
-			 ;; it is the same as chain data!
+			 ;; data is the data which maybe be needed, it's the data type.
 			 (mutable data renderer-data data-set!))))
   
   ;; page is used to compose one page
@@ -101,8 +102,10 @@
             (nongenerative melt-page)
             (fields
 			 ;; meta ==> store some useful value for the page
-			 ;; cont ==> is the template for the page
-			 ;; comt ==> is the data type components fot the page
+			 ;; cont ==> is the template for the page; actually it
+			 ;; is a procedure accept itself a page obj, and generate
+			 ;; sxml tree
+			 ;; comt ==> it is a list of symbols map the renderer type
 			 ;; need to be registered first
              (mutable meta page-meta page-meta-set!)
 			 (mutable cont page-cont page-cont-set!)
@@ -154,16 +157,17 @@
               hook
             (nongenerative melt-hook)
             (fields
+			 ;; hook's name
+             (immutable name hook-name)
              ;; if the type is 'data, proc-arg contain data
              ;; else if the type is 'proc, proc-arg is defined as following
-             (immutable name hook-name)
              (immutable type hook-type)
              ;; proc-arg is a dot pair
              ;; (procedure . args)
              ;; the hook function
              ;; the arguments, it must be wrapped in a list
              (mutable proc-arg hook-proc-arg proc-arg-set!)
-             ;; it sotres hook data, it must be same as chain data
+             ;; it sotres hook data, it must be type data
              (mutable data hook-data hook-data-set!))))
 
   ;; the trigger module for future
@@ -197,9 +201,7 @@
              (mutable condition chain-condition condition-set!)
              ;; it is a list of procedure without arguments
              (mutable execution chain-execution execution-set!)
-             ;; it's a unproper dot list,
-             ;; and car is the key list
-             ;; while cdr is an assoc list
+			 ;; data type
              (mutable data chain-data chain-data-set!))))
 
   (module type-data

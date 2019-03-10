@@ -12,7 +12,7 @@
   (define (build-help)
     (cdisplay (ctext "[37;1m" "melt")
 			  (ctext "[38;5;67m" " build")
-			  (ctext "[38;5;253" " <user-file> \n"))
+			  (ctext "[38;5;253m" " <user-file> \n"))
     (cdisplay "If the"
 			  (ctext "[38;5;253m" " <user-file> ")
 			  "is not provided, use"

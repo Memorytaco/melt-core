@@ -49,6 +49,12 @@
 	(if (memv command (data-keys command-datas))
 		(command-proc (cdr (assq command (data-cont command-datas))))
 		#f))
+
+  ;; --------------------------------------------------------------------------------- ;;
+  ;; ******************** commands insert ******************************************** ;;
+  (import (melt command init))
+  (add-command init
+			   %builtin-commands)
   
   (add-command (make-command 'build "This is for building the page!" (lambda args
 																	   (display "Hello World\n")))

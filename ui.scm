@@ -29,16 +29,15 @@
 					 (gem "[38;5;111m" " -h | -v | -vs | -l\n")))
 
 		 ;; to structure commands
-		 (define (welcome flag)
+		 (define (prepare flag)
 		   (define (melt-load)
-			 (cond
-			  [(file-exists? ".melt")
-			   (load ".melt")
-			   #t]
-			  [(file-exists? "melt.scm")
-			   (load "melt.scm")
-			   #t]
-			  [else #f]))
+			 (if (file-exists? ".melt")
+				 (cond
+				  [(file-directory? ".melt")
+				   (load ".melt/settings.scm")
+				   #t]
+				  [else #f])
+				 #f))
 		   
 		   (if flag
 			   (if (melt-load)
@@ -68,12 +67,12 @@
               (show-version-history)
 			  (exit 0)]
 			 [(or ("-l") ("--list"))
-			  (welcome #t)
+			  (prepare #t)
 			  (exit 0)]
              (else (if (null? extra-args)
 					   (begin (introduction)
 							  (exit 0))
-					   (welcome #f))))
+					   (prepare #f))))
 		   (let ((command-built (command-query (string->symbol (car extra-args))
 											   %builtin-commands))
 				 (command-user (command-query (string->symbol (car extra-args))
@@ -87,7 +86,7 @@
 					  (cdr extra-args))]
 			  [else
 			   (gem-display (gem "[38;5;99m" "Command not available!\n"))
-			   (welcome #t)]))
+			   (prepare #t)]))
 		   )
 
 		 

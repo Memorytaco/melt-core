@@ -12,7 +12,7 @@
          (define (show-version)
            (display (string-append (gem "[37;1m" "melt")
 								   (gem "[38;5;15m" " version ")
-								   (gem "[38;5;165m" "0.1.6")
+								   (gem "[38;5;165m" "0.0.1")
 								   "\n")))
 
 		 ;; the basic information

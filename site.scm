@@ -7,8 +7,12 @@
   (import type-site)
 
   (define create-site
-    (case-lambda
-	  [()
-	   ]))
+    (lambda args
+	  (cond
+	   [(null? args)
+		(make-site (create-data '(index )
+								（list )
+				   (create-data '(domain)
+								'("sample.com")))])))
   
   )

@@ -93,30 +93,22 @@
   (module type-page
           [make-page
 		   page?
-		   page-comt page-comt-set!
-		   page-proc page-proc-set!
+		   page-meta page-meta-set!
 		   page-cont page-cont-set!
-		   page-attr page-attr-set!]
+		   page-comt page-comt-set!]
           (define-record-type
               page
             (nongenerative melt-page)
             (fields
-			 ;; comt==>component : it store the components of one
-			 ;; page (including some metadata), anything one page
-			 ;; needed. split one page into many components and
-			 ;; compose it.
-			 ;; proc==>procedure : it is the function which used
-			 ;; to write the page and also before write a page, it
-			 ;; needs to compose the page from components first.
-			 ;; cont==>content : it store the full sxml tree
-			 ;; of the page.
-			 ;; attr==>attribute : it is an assoc list contains some extra
-			 ;; settings on page
-             (mutable comt page-comt page-comt-set!)
-             (mutable proc page-proc page-proc-set!)
+			 ;; meta ==> store some useful value for the page
+			 ;; cont ==> is the template for the page
+			 ;; comt ==> is the data type components fot the page
+			 ;; need to be registered first
+             (mutable meta page-meta page-meta-set!)
 			 (mutable cont page-cont page-cont-set!)
-			 (mutable attr page-attr page-attr-set!))))
+			 (mutable comt page-comt page-comt-set!))))
 
+  ;; site type is only for definition
   (module type-site
           [make-site
 		   site?
@@ -127,11 +119,12 @@
               site
             (nongenerative melt-site)
             (fields
-			 ;; it store a type data. the symbol is an key word which
-			 ;; specifics the purpose of the 
+			 ;; it stores data type data
+			 ;; this defines how the published site to be generated!
 			 (mutable layout site-layout layout-set!)
 			 ;; comt==>component : it describes the composement of the
-			 ;; site and the action on each component.
+			 ;; site and the action on each component. for example: the site map
+			 ;; it's also a data type
 			 (mutable comt site-comt comt-set!)
              ;; it is the attribute of the site like domain name
 			 ;; it is a data type

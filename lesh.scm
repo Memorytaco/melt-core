@@ -1,9 +1,9 @@
-(library (melt lago)
+(library (melt lesh)
   (export )
   (import (scheme))
 
   ;; help system will
-  (module lago-system
+  (module lesh-system
           [help-type]
 		  
           ;; help-type will tell the basic information for the type

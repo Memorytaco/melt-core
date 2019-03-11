@@ -117,8 +117,8 @@
              (pair-list (car alist) (car iterate-alist)))
             ((eq? iterate-alist '()) ht)
           (hashtable-set! ht
-                                 (car pair-list)
-                                 (cdr pair-list))))))
+                          (car pair-list)
+                          (cdr pair-list))))))
   
   (define hash-ref
     (case-lambda

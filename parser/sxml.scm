@@ -70,8 +70,8 @@
            (display #\" port))
 
          (define (element->html tag attrs body port)
-           ; Write the HTML TAG to PORT, where TAG has the attributes in the
-           ; list ATTRS and the child nodes in BODY.
+		   ;; Write the HTML TAG to PORT, where TAG has the attributes in the
+		   ;; list ATTRS and the child nodes in BODY.
            (format port "<~a" tag)
            (for-each (match-lambda
                        ((attr value)

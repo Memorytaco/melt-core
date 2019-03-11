@@ -3,6 +3,6 @@
   (import (scheme))
 
 
-  (define (try ))
+  (define-syntax (detect ))
 
   )

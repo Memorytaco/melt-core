@@ -29,10 +29,10 @@
 			(car page-list)
 			(page-list-query key (cdr page-list)))))
   
-  ;; convert the sxml to html and write it to disk
-  (define (create-writer output)
+  ;; convert the sxml to html and write it to a file
+  (define (create-writer output-file-name)
     (lambda (sxml)
-      (let ((port (open-output-file output 'replace)))
+      (let ((port (open-output-file output-file-name 'replace)))
         (sxml->html sxml port)
         (close-output-port port))))
   

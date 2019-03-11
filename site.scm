@@ -27,8 +27,10 @@
 		(let ((layout (car args))
 			  (comt (car (cdr args)))
 			  (attr (car (cdr (cdr args)))))
-		  (make-site (apply create-data layout)
-					 (apply create-data comt)
-					 (apply create-data attr)))])))
+		  (make-site layout comt attr
+					 ;;(apply create-data layout)
+					 ;;(apply create-data comt)
+					 ;;(apply create-data attr)
+					 ))])))
   
   )

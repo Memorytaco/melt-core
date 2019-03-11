@@ -1,33 +1,36 @@
-(library (Flax site)
-  (export site)
+(library (melt site)
+  (export create-site)
   (import (scheme)
-          (Flax structure)
-          (Flax asset)
-          (Flax utils)
-          (Flax product)
-          (Flax srfi srfi))
+          (melt structure)
+		  (melt invoke)
+          (melt utils)
+		  (melt data)
+		  (melt asset)
+		  (melt page))
   
   (import type-site)
-  (import type-asset)
-  (import reader-module)
-  (import process-layer-module)
 
-  ;; create the site object and return it
-  ;; The defaults are :
-  ;; posts-directory -> posts
-  ;; build-directory -> blog
-  ;; asset           -> src: assets trg: blog
-  ;; process-layer   -> default-process-layer
-  ;; readers         -> default-reader-list
-  ;; the argument must be an assoc-list
-  ;; like '((posts-directory . "post") (build-directory . "blog") ....)         
-  (define site
-    (define-assoc-lambda make-site
-      '[post-directory build-directory asset
-                       process-layer readers]
-      `["posts" "blog"
-        ,(make-asset "assets" "blog")
-        ,process-layer
-        ,(list sxml-reader commonmark-reader)]))
+  (define create-site
+    (lambda args
+	  (cond
+	   [(null? args)
+		(make-site (create-data '(index)
+								(list (lambda (directory chain)
+										((create-writer (string-append directory "/index.html"))
+										 (compose (cdr (page-list-query 'index
+																		(chain-data-query 'page chain)))
+												  (chain-data-query 'renderer chain))))))
+				   (create-data)
+				   (create-data '(domain)
+								'("localhost")))]
+	   [else
+		(let ((layout (car args))
+			  (comt (car (cdr args)))
+			  (attr (car (cdr (cdr args)))))
+		  (make-site layout comt attr
+					 ;;(apply create-data layout)
+					 ;;(apply create-data comt)
+					 ;;(apply create-data attr)
+					 ))])))
   
   )

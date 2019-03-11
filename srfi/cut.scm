@@ -1,4 +1,4 @@
-(library (Flax srfi cut)
+(library (melt srfi cut)
          (export cut)
          (import (scheme))
          

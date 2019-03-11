@@ -1,6 +1,5 @@
-(library (Flax utils)
+(library (melt utils)
   (export get-absolute-path
-          copy-file
           decompose-path-name
           compose-path-name
           identity
@@ -8,18 +7,16 @@
           hash-ref
           assq-ref
 		  make-alist
-          element-exist?
           alist->hash-table
           alist-delete
           alist?
           alist-cons
           string-split-dual
-          directory-separator-string
           string-trim
           list-directory
           while)
   (import (scheme)
-          (Flax structure))
+          (melt structure))
 
   (define (make-alist keys values)
 	(map cons keys values))
@@ -28,12 +25,6 @@
   (define identity
     (lambda (obj)
       obj))
-  
-  ;; library body  ---------------
-  (import type-site)
-  
-  (define (directory-separator-string)
-    (string (directory-separator)))
   
   ;; return the absolute path of the file
   (define (get-absolute-path file-name)
@@ -126,8 +117,8 @@
              (pair-list (car alist) (car iterate-alist)))
             ((eq? iterate-alist '()) ht)
           (hashtable-set! ht
-                                 (car pair-list)
-                                 (cdr pair-list))))))
+                          (car pair-list)
+                          (cdr pair-list))))))
   
   (define hash-ref
     (case-lambda
@@ -198,41 +189,16 @@
         (directory-list (cd))]
        [else (map directory-list path)])))
   
-  ;; copy file
-  ;; the mode is for the output port
-  (define copy-file
-    (case-lambda
-      [(src-file target-file)
-       (let ((input-port (open-file-input-port src-file))
-             (output-port (open-file-output-port target-file)))
-         (put-bytevector output-port (get-bytevector-all input-port))
-         (close-port input-port)
-         (close-port output-port))]
-      [(src-file target-file mode)
-       (let ((input-port (open-file-input-port src-file))
-             (output-port (open-file-output-port target-file mode)))
-         (put-bytevector output-port (get-bytevector-all input-port))
-         (close-port input-port)
-         (close-port output-port))]))
-  
-  (define alist?
-    (lambda (arg)
-      (cond
-       [(null? arg)
-        #t]
-       [(atom? arg)
-        #f]
-       [(list? arg)
-        (not (list? (car arg)))])))
-  
-  (define element-exist?
-    (lambda (element arg-list)
-      (cond
-       [(null? arg-list)
-        #f]
-       [else
-        (if (equal? element (car arg-list))
-            #t
-            (element-exist? element (cdr arg-list)))])))
-  
+  ;; need to be refined!!!!
+  (define (alist? arg)
+	(call/cc
+	 (lambda (cc)
+	   (if (atom? arg)
+		   (cc #f))
+	   (do ((arg-list arg (cdr arg-list)))
+		   ((null? arg-list) #t)
+		 (if (pair? (car arg-list))
+			 #t
+			 (cc #f))))) 
+	)
   )

@@ -1,79 +1,95 @@
-(library (Flax ui)
-         (export flax)
+#!chezscheme
+(library (melt ui)
+         (export melt)
          (import (scheme)
-                 (Flax utils)
-				 (Flax command build)
-                 (Flax srfi match))
+                 (melt utils)
+				 (melt lib console)
+				 (melt version)
+				 (melt command)
+				 (melt structure)
+                 (melt srfi match))
 
-         ;; command list
-         (define commands (list "build" "serve"))
-
-         ;; there are three numbers in the version string
-         ;; -- the first is the main version number, when it updates, this means
-         ;;    Flax can be packaged and can run independently. Flax now is not
-         ;;    compatibal with previous main version.
-         ;; -- the second number is the minor version number, when it updates,
-         ;;    Flax is stable with all branch version. Flax can be patched
-         ;;    and distributed.
-         ;;    Flax is compatibal with previous second version.
-         ;; -- the third number is the branch version number. Every bug fix or feature
-         ;;    added or some procedure updated will update the number.
          (define (show-version)
-           (format #t "Flax version 0.2.0 ~%build on 2019-2-4 ~%"))
 
-         (define version-history
-           '["Flax 0.0.1 ---  complete the basic functions, split the process procedure out. \n"
-             "Flax 0.0.2 ---  refine the site procedure, refine the page procedure adding file extension support. \n"
-             "Flax 0.0.3 ---  refine the write-content procedure, let the logic be better understood!! \n"
-             "Flax 0.0.4 ---  add markdown support and fix some bugs! \n"
-             "Flax 0.0.5 ---  successfully navigate the utils and ui! \n"
-             "Flax 0.0.6 ---  add match support!! add srfi !! Will do it all the time! \n"
-             "Flax 0.0.7 ---  get defaults.scm done! get sxml->html done! Now left post.scm site.scm page.scm space.scm command builder. \n"
-             "Flax 0.0.8 ---  complete post.scm and page.scm comming up with some extra utilities in utils.scm. \n"
-             "Flax 0.0.9 ---  get the asset.scm done! fix string-trim procedure and add some usefull utilities. \n"
-             "Flax 0.1.0 ---  has defined hook system. Although the system is really simple. need to renegrate all logic. \n"
-             "Flax 0.1.1 ---  has refined the hook system. add some procedures. \n"
-			 "Flax 0.1.2 ---  now it can work fine! except lacking markdown support. Latter will refine it again! \n"
-             "Flax 0.2.0 ---  navigate to chezscheme! \n"])
+           (display (string-append (gem "[37;1m" "melt")
+								   (gem "[38;5;15m" " version ")
+								   (gem "[38;5;165m" "0.0.1")
+								   "\n")))
 
-         (define (show-history)
-           (while (eq? '() version-history)
-                  (display (car version-history))
-                  (set! version-history (cdr version-history))))
-
-         ;; the basic information
-         (define (show-flax)
-           (format #t "This is just another static site generator~%")
-           (format #t "Please add \"-h\" or \"--help\" to get further help~%")
-           (format #t "For more information please follow github io page~%"))
+		 ;; the basic information
+         (define (introduction)
+           (gem-display (gem "[37m" "This is melt! Meta Excellent Local Note System.\n")
+					 (gem "[37m" "Please use \"-h\" or \"--help\" to get further help.\nFor more information please follow")
+					 (gem "[36m" " github io page.\n")))		 
 
          ;; basic help information
-         (define (show-flax-help)
-           (format #t "Basic usage : ~%")
-           (format #t "flax [ command ] [ options ] [ arguments ] ~%~%")
-           (format #t "command list as follows :: ~%")
-           (format #t "        build~%")
-           (format #t "basic information argument:~%")
-           (format #t "[ -v || --version ]  version number~%"))
+         (define (help)
+           (gem-display (gem "[37;1m" "melt ")
+					 (gem "[38;5;102m" "[options] [command] [command options] \n"))
+		   (gem-display (gem "[38;5;80m" "available options are :")
+					 (gem "[38;5;111m" " -h | -v | -vs | -l\n")))
 
-         (define (flax arg . extra-args)
-           (match extra-args
-                  [(or ("-h") ("--help"))
-                   (show-flax-help)]
-                  [(or ("-v") ("--version")) 
-                   (show-version)]
-                  [(or ("-vs") ("--version-history"))
-                   (show-history)]
-                  [("build")
-                   (build "env.scm")]
-                  [("build" (or "-h" "--help"))
-				   (show-build-help)]
-                  [("build" args ...)
-				   (build (car args))
-                   (display "build with many args\n")
-                   (map display (map string-append args (make-list (length args) "\n")))]
-                  [("serve")
-                   (display "not ready yet!\n")]
-                  (else (show-flax))))
+		 ;; to structure commands
+		 (define (prepare flag)
+		   (define (melt-load)
+			 (if (file-exists? ".melt")
+				 (cond
+				  [(file-directory? ".melt")
+				   (load ".melt/settings.scm")
+				   #t]
+				  [else #f])
+				 #f))
+		   
+		   (if flag
+			   (if (melt-load)
+				   (begin
+					 (gem-display (gem "[38;5;10m" "==========")
+							   (gem "[38;5;142m" "  Available commands :\n"))
+					 (show-commands %builtin-commands)				 
+					 (show-commands %user-commands))
+				   (begin
+					 (gem-display (gem "[38;5;196m" "Error! ")
+							   (gem "[38;5;222m" "melt configure file doesn't exist! Only show builtin commands\n"))
+					 (gem-display (gem "[38;5;10m" "==========")
+							   (gem "[38;5;142m" "  Available commands :\n"))
+					 (show-commands %builtin-commands)))
+			   (melt-load)))
 
+		 ;; user interface
+         (define (melt arg . extra-args)
+		   (match extra-args
+             [(or ("-h") ("--help"))
+              (help)
+			  (exit 0)]
+             [(or ("-v") ("--version")) 
+              (show-version)
+			  (exit 0)]
+             [(or ("-vs") ("--version-history"))
+              (show-version-history)
+			  (exit 0)]
+			 [(or ("-l") ("--list"))
+			  (prepare #t)
+			  (exit 0)]
+             (else (if (null? extra-args)
+					   (begin (introduction)
+							  (exit 0))
+					   (prepare #f))))
+		   (let ((command-built (command-query (string->symbol (car extra-args))
+											   %builtin-commands))
+				 (command-user (command-query (string->symbol (car extra-args))
+											  %user-commands)))
+			 (cond
+			  [command-built
+			   (apply command-built
+					  (cdr extra-args))]
+			  [command-user
+			   (apply command-user
+					  (cdr extra-args))]
+			  [else
+			   (gem-display (gem "[38;5;99m" "Command not available!\n"))
+			   (prepare #t)]))
+		   )
+
+		 
+		 
          )

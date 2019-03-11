@@ -41,7 +41,7 @@
 ;; 2006/12/24 - bugfixes
 ;; 2006/12/01 - non-linear patterns, shared variables in OR, get!/set!
 
-(library (Flax srfi match)
+(library (melt srfi match)
          (export match 
                  match-let 
                  match-let* 

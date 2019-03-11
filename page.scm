@@ -1,46 +1,39 @@
-(library (Flax page)
-  (export page
-		  create-writer)
+(library (melt page)
+  (export create-page
+		  compose
+		  create-writer
+		  page-list-query)
   (import (scheme)
-          (Flax structure)
-          (Flax srfi match)
-          (Flax utils)
-		  (Flax process)
-          (Flax asset)
-          (Flax reader sxml)
-          (Flax product))
+          (melt srfi match)
+          (melt parser sxml)
+          (melt utils)
+		  (melt lib file)
+          (melt asset)
+		  (melt renderer)
+          (melt structure)
+          (melt glob parser))
   
   (import type-page)
-  (import type-process)
-  (import type-post)
+
+  (define (create-page meta cont comt)
+	(make-page meta cont comt))
+
+  (define (compose page renderer-list)
+	(let ((generate-sxml (page-cont page)))
+	  (generate-sxml page renderer-list)))
+
+  (define (page-list-query key page-list)
+	(if (null? page-list)
+		#f
+		(if (eq? key (page-meta (car page-list)))
+			(car page-list)
+			(page-list-query key (cdr page-list)))))
   
-  ;; create the default writer for page
-  (define (create-writer)
-    (lambda (sxml-tree output)
-      (let ((port (open-output-file output 'replace)))
-        (sxml->html sxml-tree port)
+  ;; convert the sxml to html and write it to a file
+  (define (create-writer output-file-name)
+    (lambda (sxml)
+      (let ((port (open-output-file output-file-name 'replace)))
+        (sxml->html sxml port)
         (close-output-port port))))
   
-  ;; write the rendered page to one directory
-  ;; the directory can be a path
-  ;; directory must be absolute path!!!
-  (define (write-page page directory)
-    (let* ((name (page-name page))
-		  (content (page-content page))
-		  (writer (page-writer page))
-		  (output (string-append directory 
-                                 (directory-separator-string) 
-                                 name)))
-	  (mkdir-r (path-parent output))
-	  (writer content output)))
-  
-  ;; build the page obj and write it to disk
-  (define page
-    (lambda (post directory process-layer)
-      (let* ((writer (create-writer))
-             (page* (make-page (string-append (path-root (post-name post))
-                                              ".html")
-                               ((procedure-ref 'meta process-layer)
-								  process-layer post)
-                               writer)))
-        (write-page page* directory)))))
+  )

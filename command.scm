@@ -53,11 +53,11 @@
   ;; --------------------------------------------------------------------------------- ;;
   ;; ******************** commands insert ******************************************** ;;
   (import (melt command init))
-  (import (melt command build))
+  (import (melt command exec))
   
   (add-command init
 			   %builtin-commands)
-  (add-command build
+  (add-command exec
 			   %builtin-commands)
   (add-command (make-command 'serve "A little server!" (lambda args
 														 (display "This is a server!\n"))))

@@ -1,5 +1,5 @@
-(library (melt command build)
-  (export build)
+(library (melt command exec)
+  (export exec)
   (import (scheme)
           (melt structure)
 		  (melt invoke)
@@ -9,9 +9,9 @@
   
   (import type-command)
   ;; display the build command usage
-  (define (build-help)
+  (define (exec-help)
     (gem-display (gem "[37;1m" "melt")
-			  (gem "[38;5;67m" " build")
+			  (gem "[38;5;67m" " exe")
 			  (gem "[38;5;253m" " <user-file> \n"))
     (gem-display "If the"
 			  (gem "[38;5;253m" " <user-file> ")
@@ -20,7 +20,7 @@
 			  "instead. \n"))
   
   ;; the build command
-  (define (build-cli user-file)
+  (define (exec-cli user-file)
     (if (file-exists? user-file)
         (begin
 		  (load user-file)
@@ -28,9 +28,9 @@
 		(begin
           (format #t "Coundn't find config file !! ~%expect ~a but got nothing !~%" (basename user-file)))))
 
-  (define build
-	(make-command 'build
-				  "build command to build the site"
-				  build-cli))
+  (define exec
+	(make-command 'exec
+				  "melt command to execute one list actions, mostly build the site."
+				  exec-cli))
   
   )

@@ -14,10 +14,17 @@
 				 (gem "[38;5;253m" " name ")
 				 "is not provided, it will generate .melt in working directory \n"))
 
+  ;; create some files
   (define (initprocedure)
 	(mkdir ".melt")
 	(system "touch .melt/settings.scm"))
+
+
+  ;; todo 
+  (define (build-welcome-message)
+	'todo)
   
+  ;; interface to be invoked in ui
   (define init-cli
 	(lambda args
 	  (cond

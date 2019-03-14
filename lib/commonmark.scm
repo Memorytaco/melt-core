@@ -1,7 +1,9 @@
 #!chezscheme
 (library (melt lib commonmark)
   (export commonmark->sxml
-		  split-paragraph)
+		  split-paragraph
+		  transform-token
+		  tokenize-module)
   (import (scheme)
 		  (melt utils))
 
@@ -15,7 +17,7 @@
 	 ;; attr is an list and each element is a list
 	 ;; which has two elements
 	 (immutable attr token-attr)
-	 ;; the content
+	 ;; the content is also a list
 	 (immutable cont token-cont)))
 
   ;;-----------------------------------------------define key words ########
@@ -38,9 +40,11 @@
 			(cons '@ t-list)))
 	  (if (token-attr token)
 		  (if (token-cont token)
-			  `(,token-name ,(attr-expand (token-attr token)) ,(token-cont token))
-			  `(,token-name ,(attr-expand (token-attr token))))
-		  (list token-name)))
+			  `(,(token-type token) ,(attr-expand (token-attr token)) ,(token-cont token))
+			  `(,(token-type token) ,(attr-expand (token-attr token))))
+		  (if (token-cont token)
+			  `(,(token-type token) ,(token-cont token))
+			  (list (token-type token)))))
   
   ;; judge whether a line is a blank line
   ;; the line doesn't contain a newlne character
@@ -65,7 +69,6 @@
 		   ((eof-object? line)
 			(set! paragraphs (append paragraphs (list paragraph)))
 			paragraphs)
-		 (display line)
 		 (if (blank-line? line)
 			 (begin
 			   (set! paragraphs (append paragraphs (list paragraph)))
@@ -73,12 +76,44 @@
 			   (set! line '()))
 			 (set! line (list line)))))))
 
-  (define tokenize
-	(lambda (line-list)
-	  `(p )))
+  (module tokenize-module
+		  (tokenize
+		   )
+		  
+		  (define tokenize-p
+			(let ((tokens '())
+				  (temp-char-list '()))
+			  (values (lambda (line-or-port)
+						(call-with-port (if (port? line-or-port)
+											line-or-port
+											(open-string-input-port line-or-port))
+										(lambda (port)
+										  (do ((char (read-char port) (read-char port)))
+											  ((eof-object? char) #t)
+											(cond
+											 [(equal? char #\#)
+											  (append! temp-char-list (list char))])))))
+					  (lambda ()
+						(values tokens)))))
 
+		  (define tokenize
+			(lambda (paragraphs)
+			  (do ((paragraphs paragraphs (cdr paragraphs))
+				   (tokens (list)))
+				  ((null? paragraphs) tokens)
+				(set! tokens
+					  (append tokens (list (make-token 'p #f (apply string-append (car paragraphs)))))))))
+
+		  )
+  
+  
+  
+  (import tokenize-module)
   (define commonmark->sxml
-	(lambda ()
-	  '3))
+	(lambda (path)
+	  (define lines (split-paragraph path))
+	  (define tokens (tokenize lines))
+	  (display tokens)
+	  (map transform-token tokens)))
 
   )

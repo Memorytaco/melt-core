@@ -17,7 +17,8 @@
   ;; -- the Y is the stable release during X, add some functions or bug fix.
   ;; -- the Z is the trial number. Each tested feature will be in here.
   (define version-history
-    '[("0.0.1" . "navigate to chezscheme!")])
+    '[("0.0.1" . "navigate to chezscheme!")
+	  ("0.0.2" . "add markdown parser! now it will work!")])
 
   
   )

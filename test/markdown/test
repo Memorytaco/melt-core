@@ -1,7 +1,14 @@
 # 第一行代码
+hello nice
+# 得的骄傲弗兰克
+##根目录下的布局
+![hello nice](htps ljdjf)
+[this is a line](lsdkjfla)
 
-## 根目录下的布局
-
+***
+------
+***********
+`zhege 是一个code`
 | 文件                  | 类别 | 作用                          |
 | --------------------- | ---- | ----------------------------- |
 | .gradle 和 .idea      | d    | android studio 自动的生成文件 |
@@ -14,6 +21,8 @@
 | \*.iml                | f    | idea 相关                     |
 | local.properties      | f    | 指定本机中 Android SDK 路径的 |
 | settings.gradle       | f    | 用于指定项目中所有引入的模块  |
+![this is a picture](hello)
+hello![this is another picture](hello)
 
 ## /app 目录下的布局
 

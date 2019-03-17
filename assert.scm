@@ -19,6 +19,9 @@
   ;;        <fatal-type>: <fatal-message> <fatal-stack>
 
 
+  (define-syntax massert
+	(syntax-rules ()
+	  ))
   ;; TODO add fatal control
   (define (mmessage type msg . args)
 	(define foreground (string-append (string #\033) "[38;5;"))

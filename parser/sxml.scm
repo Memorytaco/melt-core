@@ -79,9 +79,10 @@
                         (attribute->html attr value port)))
                      attrs)
            (if (and (null? body) (void-element? tag))
-               (display " />\n" port)
+               (display "/>\n" port)
                (begin
                  (display #\> port)
+				 (display #\newline port)
                  (for-each (lambda (x)
                              (sxml->html x port)) body)
                  (format port "</~a>\n" tag))))

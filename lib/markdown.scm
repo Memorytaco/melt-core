@@ -2,9 +2,10 @@
 (library
 	(melt lib markdown)
   (export markdown->sxml
+		  scone
 		  check-chars
-		  compose-paragraph
-		  context-switch)
+		  position-forward
+		  context-parse)
   (import (scheme))
 
   ;; this parser will append char, symbol,

@@ -14,7 +14,6 @@
 		#t
 		#f))
 
-
   ;; return the dir/name string
   (define (get-fasl-path dir name)
 	(string-append dir (directory-separator-string) (basename name)))
@@ -27,13 +26,12 @@
   (define sxml-parser
     (create-parser 'sxml
                    (lambda (file-name)
-					 (let ((target (get-fasl-path ".melt/cache" file-name)))
-					   (if (not (file-exists? target))
-						   (store-fasl ".melt/cache" file-name target))
-					   (call-with-output-file target
-						 (let ((contents (get-fasl target)))
-						   (list (alist-delete 'content contents)
-								 (cdr (assq 'content contents)))))))))
+					 (let ((cache (get-fasl-path ".melt/cache" file-name)))
+					   (if (not (file-exists? cache))
+						   (store-fasl ".melt/cache" file-name cache))
+					   (let ((contents (get-fasl cache)))
+						 (list (alist-delete 'content contents)
+							   (cdr (assq 'content contents))))))))
 
   
   )

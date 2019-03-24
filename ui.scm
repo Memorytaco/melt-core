@@ -5,6 +5,7 @@
                  (melt utils)
 				 (melt lib console)
 				 (melt version)
+				 (melt glob)
 				 (melt command)
 				 (melt structure)
                  (melt srfi match))
@@ -25,9 +26,9 @@
          ;; basic help information
          (define (help)
            (gem-display (gem "[37;1m" "melt ")
-					 (gem "[38;5;102m" "[options] [command] [command options] \n"))
+						(gem "[38;5;102m" "[options] [command] [command options] \n"))
 		   (gem-display (gem "[38;5;80m" "available options are :")
-					 (gem "[38;5;111m" " -h | -v | -vs | -l\n")))
+						(gem "[38;5;111m" " -h | -v | -vs | -l\n")))
 
 		 ;; to structure commands
 		 (define (prepare flag)
@@ -72,8 +73,10 @@
 			  (exit 0)]
              (else (if (null? extra-args)
 					   (begin (introduction)
-							  (exit 0))
-					   (prepare #f))))
+							  (exit 0)))))
+           (if (not (file-exists? ".melt"))
+			   (gem-display (gem "[38;5;196m" "You are not in the root of working directory!\n")))
+		   (prepare #f)
 		   (let ((command-built (command-query (string->symbol (car extra-args))
 											   %builtin-commands))
 				 (command-user (command-query (string->symbol (car extra-args))

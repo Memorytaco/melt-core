@@ -62,24 +62,20 @@
   ;; the top field schedule 总调度器
   ;; top-parse will remain last readed char in port
   (define (top-parse sxml keywords port)
-	(display "in top-parse\n")
     (let ((next (peek-char port)))
       (cond
        [(eof-object? next)
 		sxml]
 	   ;; drop blank char
 	   [(member next %%empty-chars)
-		(display "empty-chars\n")
 		(position-forward port 1)
 		(top-parse sxml keywords port)]
 	   ;; judge whether it is a line keyword
        [(member next keywords)
-		(display "top parse line keyword\n")
 		(top-parse (scone sxml (context-switch 'line port))
 				   keywords port)]
 	   ;; if not line keyword, treat it as a paragraph
 	   [else
-		(display "top parse else\n")
 		(let ((paragraph (compose-paragraph (list 'p) port)))
           (top-parse (scone sxml paragraph) keywords port))])))
 
@@ -91,38 +87,29 @@
 		  sxml
           (cond
 		   [(check-chars '(#\newline #\newline) port)
-			(display "end paragraph\n")
 			(position-forward port 2)
 			sxml]
 		   [(check-chars '(#\newline #\` #\` #\`) port)
-			(display "code block, end paragraph\n")
 			(position-forward port 1)
 			sxml]
 		   [(check-chars '(#\newline #\#) port)
-			(display "get header context, end paragraph\n")
 			(position-forward port 1)
 			sxml]
 		   [(check-chars '(#\newline #\* #\space) port)
-			(display "get list context, end paragraph\n")
 			(position-forward port 1)
 			sxml]
 		   [(check-chars '(#\newline #\- #\space) port)
-			(display "get list context, end paragraph\n")
 			(position-forward port 1)
 			sxml]
 		   [(check-chars '(#\newline #\! #\[) port)
-			(display "get an image, end paragraph \n")
 			sxml]
 		   [(check-chars '(#\newline #\>) port)
-			(display "get a block quote, end paragraph \n")
 			sxml]
 		   [(check-chars '(#\newline) port)
-			(display "get one newline\n")
 			(position-forward port 1)
 			(let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
 			  (compose-paragraph (scone (scone sxml #\space) line) port))]
 		   [else
-			(display "in compose paragraph, get a common char\n")
 			(let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
 			  (compose-paragraph (scone sxml line) port))]))))
 
@@ -139,25 +126,19 @@
       (cond
 	   [(or (eof-object? next)
             (member next terminators))
-		(display (string-append "in context parse:get one char:::-> " (apply string (if (eof-object next)
-																						(list #\e #\n #\d)
-																						next)) "\n"))
 		(if (not (eq? next #\newline)) (read-char port))
 		sxml]
        [(eq? next #\\)
-		(display "get one \\\n")
 		(position-forward port 1)
 		(let ((escaped (read-char port)))
           (context-parse terminators keywords (scone sxml escaped) port))]
 	   ;; parse keywords
        [(member next keywords)
-		(display "get special keys, into inner\n")
 		(let ((special-block (context-switch 'inner port)))
           (context-parse terminators keywords
                         (scone sxml special-block) port))]
 	   ;; common chars, just append to the sxmls
        [else
-		(display "in context-parse, common word\n")
 		(context-parse terminators keywords
                       (scone sxml (read-char port)) port)])))
 
@@ -188,24 +169,23 @@
 		(parse-hr port)]
 	   [(check-chars '(#\* #\* #\*) port)
 		(parse-hr port)]
-	   [else (error type "not match!!")])]
+     [(check-chars '(#\- #\space) port)
+      (list 'p (compose-paragraph (list) port))]
+     [(check-chars '(#\* #\space) port)
+      (list 'p (compose-paragraph (list) port))]
+	   [else (error type (string-append "the char " (string (peek-char port)) " not match!!"))])]
 	 [(eq? type 'inner)
-	  (display "i'm now in inner\n")
 	  (cond
 	   ;; judge the type, and switch context
 	   [(or (check-chars '(#\* #\*) port)
 			(check-chars '(#\_ #\_) port))
-		(display "inner: get a strong type\n")
 		(list 'strong (parse-strong port))]
 	   [(or (check-chars '(#\_) port)
 			(check-chars '(#\*) port))
-		(display "inner: get a em type\n")
 		(list 'em (parse-em port))]
 	   [(check-chars '(#\[) port)
-		(display "inner: get a link type\n")
 		(parse-link port)]
 	   [(check-chars '(#\`) port)
-		(display "inner: get a code type\n")
 		(list 'code (parse-inline-code port))]
 	   [(check-chars '(#\! #\[) port)
 		(parse-img port)]

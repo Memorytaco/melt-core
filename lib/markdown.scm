@@ -5,33 +5,17 @@
           scone
           check-chars
           position-forward
-          context-parse)
+          context-parse
+          eof)
   (import (scheme))
-
-  ;; this parser will append char, symbol,
-  ;; `@ symbol, empty list to the sxml list
-
-  ;; support form
-  ;; [name](link)
-  ;; ![name](link)
-  ;; **hello** or __hello__
-  ;; *hello* or _hello_
-  ;; ```class ... codes ```
-  ;; `code`
-  ;; *** or --- equal (hr)
-
-  ;; keywords in a line context
-  (define %%inner-keyword '(#\* #\_ #\[ #\` #\!))
-  ;; keywords starting a line
-  (define %%line-keyword '(#\# #\! #\- #\* #\` #\>))
-  ;; empty chars
-  (define %%empty-chars '(#\newline #\space))
-
 
   ;; define append but contain one single element
   (define-syntax scone
     (syntax-rules ()
       ((_ ls new) (append ls (list new)))))
+
+  ;; define the eof object for pattern
+  (define eof (eof-object))
 
   ;; if n larger than position, do nothing
   (define (position-back port n)
@@ -44,6 +28,7 @@
   (define (position-forward port n)
     (set-port-position! port (+ n (port-position port))))
 
+  ;; #######################################################
   ;; the pattern is a list. port is a text port.
 
   ;; pattern is a list of char and can include a nested char list.
@@ -75,6 +60,32 @@
                 (error 'pattern-chars "unproperly pattern char!")]))))
     ($$check pattern (port-position port) port))
 
+  ;; when match and flag is true, return the matched char list. forward port.
+  ;; and flag is false, return #t, don't alter the port
+  ;; when don't match, just single return #f
+  (define (terminate-pattern-match pattern port flag)
+    (define (return-chars char-list port number)
+      (cond
+        [(= 0 number)
+         char-list]
+        [(> 0 number)
+         (return-chars (scone char-list (read-char port))
+                       port
+                       (- number 1))]
+        [else (error 'return-chars "error occured in terminate-pattern-match")]))
+    (if (check-chars pattern port)
+        (if flag
+            (return-chars (list) port (length pattern))
+            #t)
+        #f))
+
+  ;; keywords in a line context
+  (define %%inner-keyword '(#\* #\_ #\[ #\` #\!))
+  ;; keywords starting a line
+  (define %%line-keyword '(#\# #\! #\- #\* #\` #\>))
+  ;; empty chars
+  (define %%empty-chars '(#\newline #\space))
+
   ;; define markdown->sxml
   (define (markdown->sxml port)
     (top-parse (list) %%line-keyword port))
@@ -82,56 +93,55 @@
   ;; the top field schedule 总调度器
   ;; top-parse will remain last readed char in port
   (define (top-parse sxml keywords port)
-    (let ((next (peek-char port)))
-      (cond
-        [(eof-object? next)
-         sxml]
-        ;; drop blank char
-        [(member next %%empty-chars)
-         (position-forward port 1)
-         (top-parse sxml keywords port)]
-        ;; judge whether it is a line keyword
-        [(member next keywords)
-         (top-parse (scone sxml (context-switch 'line port))
-                    keywords port)]
-        ;; if not line keyword, treat it as a paragraph
-        [else
-          (let ((paragraph (compose-paragraph (list 'p) port)))
-            (top-parse (scone sxml paragraph) keywords port))])))
+    (define next (peek-char port))
+    (cond
+      [(port-eof? port)
+       sxml]
+      ;; drop blank char
+      [(member next %%empty-chars)
+       (position-forward port 1)
+       (top-parse sxml keywords port)]
+      ;; judge whether it is a line keyword
+      [(member next keywords)
+       (top-parse (scone sxml (context-switch 'line port))
+                  keywords port)]
+      ;; if not line keyword, treat it as a paragraph
+      [else
+        (let ((paragraph (compose-paragraph (list 'p) port)))
+          (top-parse (scone sxml paragraph) keywords port))]))
 
   ;; Done
   ;; to generate a (p ...) element
   (define (compose-paragraph sxml port)
-    (let ((next (peek-char port)))
-      (if (eof-object? next)
-          sxml
-          (cond
-            [(check-chars '(#\newline #\newline) port)
-             (position-forward port 2)
-             sxml]
-            [(check-chars '(#\newline #\` #\` #\`) port)
-             (position-forward port 1)
-             sxml]
-            [(check-chars '(#\newline #\#) port)
-             (position-forward port 1)
-             sxml]
-            [(check-chars '(#\newline #\* #\space) port)
-             (position-forward port 1)
-             sxml]
-            [(check-chars '(#\newline #\- #\space) port)
-             (position-forward port 1)
-             sxml]
-            [(check-chars '(#\newline #\! #\[) port)
-             sxml]
-            [(check-chars '(#\newline #\> #\space) port)
-             sxml]
-            [(check-chars '(#\newline) port)
-             (position-forward port 1)
-             (let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
-               (compose-paragraph (scone (scone sxml #\space) line) port))]
-            [else
-              (let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
-                (compose-paragraph (scone sxml line) port))]))))
+    (cond
+      [(port-eof? port)
+       sxml]
+      [(check-chars '(#\newline #\newline) port)
+       (position-forward port 2)
+       sxml]
+      [(check-chars '(#\newline #\` #\` #\`) port)
+       (position-forward port 1)
+       sxml]
+      [(check-chars '(#\newline #\#) port)
+       (position-forward port 1)
+       sxml]
+      [(check-chars '(#\newline #\* #\space) port)
+       (position-forward port 1)
+       sxml]
+      [(check-chars '(#\newline #\- #\space) port)
+       (position-forward port 1)
+       sxml]
+      [(check-chars '(#\newline #\! #\[) port)
+       sxml]
+      [(check-chars '(#\newline #\> #\space) port)
+       sxml]
+      [(check-chars '(#\newline) port)
+       (position-forward port 1)
+       (let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
+         (compose-paragraph (scone (scone sxml #\space) line) port))]
+      [else
+        (let ((line (context-parse '(#\newline) %%inner-keyword (list) port)))
+          (compose-paragraph (scone sxml line) port))]))
 
   ;; it's a context parser, could be invoked in any context
   ;; of course including itself

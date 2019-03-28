@@ -89,7 +89,6 @@
                     (do ((patterns pattern-ls (cdr patterns))
                          (key-context-list (map cons pattern-ls FAs)))
                       ((null? patterns) #f)
-                      (display "this means last don't pass\n")
                       (let ((cur-pattern (car patterns)))
                         (if (pattern-match cur-pattern port)
                             (cc ((lambda (item) (cur-context (scone sxml item) port))
@@ -289,7 +288,6 @@
        (list 'h2 (aux-parse-header sxml port))]
       [(pattern-match '(#\# #\# #\# #\space) port)
        (char-forward port 4)
-       (display "in 3\n")
        (list 'h3 (aux-parse-header sxml port))]
       [(pattern-match '(#\# #\# #\# #\# #\space) port)
        (char-forward port 5)

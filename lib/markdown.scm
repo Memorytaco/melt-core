@@ -74,7 +74,7 @@
                 (error 'pattern-atoms "unproperly pattern atom")]))))
     ($$check pattern (port-position port) port))
 
-  (trace-define (g-check-list ls)
+  (define (g-check-list ls)
                 (lambda (ob)
                   (equal? ls ob)))
 
@@ -83,7 +83,7 @@
   ;; so it can return to previous context
   ;; 这里之后可以使用cc来进行错误处理和异常报告排错, 需要和define-FA 联合
 
-  (trace-define (context-transform sxml port pattern-ls FAs cur-context)
+  (define (context-transform sxml port pattern-ls FAs cur-context)
                 (call/cc
                   (lambda (cc)
                     (do ((patterns pattern-ls (cdr patterns))
@@ -99,7 +99,7 @@
   ;; forward-numbers list is to forward the port position if matched.
   ;; if not match, return #f.
   ;; the value must use delay to wrap
-  (trace-define (context-return value port pattern-ls forward-numbers)
+  (define (context-return value port pattern-ls forward-numbers)
                 (call/cc
                   (lambda (cc)
                     (do ((end-pattern (cons `(,eof) pattern-ls) (cdr end-pattern))

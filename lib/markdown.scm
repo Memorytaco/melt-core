@@ -75,8 +75,8 @@
     ($$check pattern (port-position port) port))
 
   (define (g-check-list ls)
-                (lambda (ob)
-                  (equal? ls ob)))
+    (lambda (ob)
+      (equal? ls ob)))
 
   ;; use the pattern to determine which context to enter in
   ;; return the parsed sxml and pass previous context(procedure) to it
@@ -84,31 +84,31 @@
   ;; 这里之后可以使用cc来进行错误处理和异常报告排错, 需要和define-FA 联合
 
   (define (context-transform sxml port pattern-ls FAs cur-context)
-                (call/cc
-                  (lambda (cc)
-                    (do ((patterns pattern-ls (cdr patterns))
-                         (key-context-list (map cons pattern-ls FAs)))
-                      ((null? patterns) #f)
-                      (let ((cur-pattern (car patterns)))
-                        (if (pattern-match cur-pattern port)
-                            (cc ((lambda (item) (cur-context (scone sxml item) port))
-                                 ((cdr (assp (g-check-list cur-pattern) key-context-list)) (list) port)))))))))
+    (call/cc
+      (lambda (cc)
+        (do ((patterns pattern-ls (cdr patterns))
+             (key-context-list (map cons pattern-ls FAs)))
+          ((null? patterns) #f)
+          (let ((cur-pattern (car patterns)))
+            (if (pattern-match cur-pattern port)
+                (cc ((lambda (item) (cur-context (scone sxml item) port))
+                     ((cdr (assp (g-check-list cur-pattern) key-context-list)) (list) port)))))))))
 
   ;; check each terminate pattern and end the context if matched returning value.
   ;; forward-numbers list is to forward the port position if matched.
   ;; if not match, return #f.
   ;; the value must use delay to wrap
   (define (context-return value port pattern-ls forward-numbers)
-                (call/cc
-                  (lambda (cc)
-                    (do ((end-pattern (cons `(,eof) pattern-ls) (cdr end-pattern))
-                         (query-forward-numbers (map cons (cons `(,eof) pattern-ls)
-                                                     (cons 0 forward-numbers))))
-                      ((null? end-pattern) #f)
-                      (let* ((cur-pattern (car end-pattern))
-                             (number (cdr (assp (g-check-list cur-pattern) query-forward-numbers))))
-                        (if (pattern-match cur-pattern port)
-                            (begin (char-forward port number) (cc (force value)))))))))
+    (call/cc
+      (lambda (cc)
+        (do ((end-pattern (cons `(,eof) pattern-ls) (cdr end-pattern))
+             (query-forward-numbers (map cons (cons `(,eof) pattern-ls)
+                                         (cons 0 forward-numbers))))
+          ((null? end-pattern) #f)
+          (let* ((cur-pattern (car end-pattern))
+                 (number (cdr (assp (g-check-list cur-pattern) query-forward-numbers))))
+            (if (pattern-match cur-pattern port)
+                (begin (char-forward port number) (cc (force value)))))))))
 
   ;; define a FA
   ;; end-lambda must be (lambda (sxml port) bodys...)
@@ -208,6 +208,7 @@
                     '(#\- #\-)
                     '(#\*)
                     '(#\-)
+                    '(#\$ #\$)
                     '(()))
               (list aux-escape
                     aux-paragraph-space
@@ -217,6 +218,7 @@
                     pattern-parse-strong
                     pattern-parse-em
                     pattern-parse-em
+                    pattern-parse-unchanged
                     aux-common)])
 
   (define (aux-paragraph-space sxml port)
@@ -257,6 +259,7 @@
                     '(#\- #\-)
                     '(#\*)
                     '(#\-)
+                    '(#\$)
                     '(()))
               (list aux-escape
                     aux-paragraph-space
@@ -266,6 +269,7 @@
                     pattern-parse-strong
                     pattern-parse-em
                     pattern-parse-em
+                    pattern-parse-unchanged
                     aux-common)))
 
   ;;;   =============== header ===============
@@ -463,5 +467,20 @@
       [(pattern-match '(#\)) port)
        `(@ (src ,(apply string sxml)))]
       [else (aux-parse-img-end (scone sxml (read-char port)) port)]))
+
+  ;; ====================== specific unchanged block ========================
+  (define-FA pattern-parse-unchanged
+             (lambda (sxml port) (list 'span '(@ (class "math")) sxml))
+             [(list '(() #\$ #\$)) (list 3)]
+             [(list '(#\$ #\$)
+                    '(()))
+              (list (aux-ignore 2)
+                    aux-parse-unchanged)])
+
+  (define-FA aux-parse-unchanged
+             (lambda (sxml port) (scone sxml (peek-char port)))
+             [(list '(() #\$ #\$)) (list 0)]
+             [(list '(()))
+              (list aux-common)])
 
   )

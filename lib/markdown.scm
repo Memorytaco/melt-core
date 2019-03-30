@@ -161,10 +161,6 @@
           '()
           char)))
 
-  ;; for the list - and *
-  (define (pattern-parse-list sxml port)
-    (display "not ready") '())
-
   ;; the top environment(context)
   (define-FA pattern-top-parse
              (lambda (sxml port) `(,sxml))
@@ -175,6 +171,7 @@
                     '(#\#)
                     '(#\* #\space)
                     '(#\- #\space)
+                    '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\! #\[)
                     '(#\> #\space)
                     '(()))
@@ -182,8 +179,9 @@
                     (aux-ignore 1)
                     pattern-parse-block-code
                     pattern-parse-header
-                    pattern-parse-list
-                    pattern-parse-list
+                    pattern-parse-ul-list
+                    pattern-parse-ul-list
+                    pattern-parse-ol-list
                     pattern-parse-img
                     pattern-parse-block-quote
                     pattern-parse-paragraph)])
@@ -197,17 +195,18 @@
                     '(#\newline #\#)
                     '(#\newline #\* #\space)
                     '(#\newline #\- #\space)
+                    '(#\newline (#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\newline #\! #\[)
                     '(#\newline #\> #\space))
-              (list 2 1 1 1 1 1 1)]
+              (list 2 1 1 1 1 1 1 1)]
              [(list '(#\\ ())
                     '(#\newline)
                     '(#\[)
                     '(#\`)
                     '(#\* #\*)
-                    '(#\- #\-)
+                    '(#\_ #\_)
                     '(#\*)
-                    '(#\-)
+                    '(#\_)
                     '(#\$ #\$)
                     '(()))
               (list aux-escape
@@ -218,7 +217,7 @@
                     pattern-parse-strong
                     pattern-parse-em
                     pattern-parse-em
-                    pattern-parse-unchanged
+                    pattern-parse-math
                     aux-common)])
 
   (define (aux-paragraph-space sxml port)
@@ -233,9 +232,10 @@
                     '(#\newline #\#)
                     '(#\newline #\* #\space)
                     '(#\newline #\- #\space)
+                    '(#\newline (#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\newline #\! #\[)
                     '(#\newline #\> #\space))
-              (list 2 1 1 1 1 1 1))
+              (list 2 1 1 1 1 1 1 1))
              ((list '(#\> #\space)
                     '(()))
               (list (aux-ignore 2)
@@ -248,17 +248,18 @@
                     '(#\newline #\#)
                     '(#\newline #\* #\space)
                     '(#\newline #\- #\space)
+                    '(#\newline (#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\newline #\! #\[)
                     '(#\newline #\> #\space))
-              (list 0 0 0 0 0 0 0))
+              (list 0 0 0 0 0 0 0 0))
              ((list '(#\\)
                     '(#\newline)
                     '(#\`)
                     '(#\[)
                     '(#\* #\*)
-                    '(#\- #\-)
+                    '(#\_ #\_)
                     '(#\*)
-                    '(#\-)
+                    '(#\_)
                     '(#\$)
                     '(()))
               (list aux-escape
@@ -269,7 +270,7 @@
                     pattern-parse-strong
                     pattern-parse-em
                     pattern-parse-em
-                    pattern-parse-unchanged
+                    pattern-parse-math
                     aux-common)))
 
   ;;;   =============== header ===============
@@ -468,8 +469,8 @@
        `(@ (src ,(apply string sxml)))]
       [else (aux-parse-img-end (scone sxml (read-char port)) port)]))
 
-  ;; ====================== specific unchanged block ========================
-  (define-FA pattern-parse-unchanged
+  ;; ====================== math block (need other support ========================
+  (define-FA pattern-parse-math
              (lambda (sxml port) (list 'span '(@ (class "math")) sxml))
              [(list '(() #\$ #\$)) (list 3)]
              [(list '(#\$ #\$)
@@ -482,5 +483,68 @@
              [(list '(() #\$ #\$)) (list 0)]
              [(list '(()))
               (list aux-common)])
+
+  ;; ========================   list =============================
+  ;; for the list context
+  ;; return ul or ol
+  (define-FA pattern-parse-ul-list
+             (lambda (sxml port) (cons 'ul sxml))
+             [(list '(#\newline (! #\* #\-) (! #\space)))
+              (list 1)]
+             [(list '(#\newline)
+                    '(#\* #\space)
+                    '(#\- #\space))
+              (list (aux-ignore 1)
+                    aux-parse-ul-list
+                    aux-parse-ul-list)])
+
+  (define-FA aux-parse-ul-list
+             (lambda (sxml port) `(li ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '(#\* #\space)
+                    '(#\- #\space)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(()))
+              (list (aux-ignore 2)
+                    (aux-ignore 2)
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
+
+  (define-FA pattern-parse-ol-list
+             (lambda (sxml port) (cons 'ol sxml))
+             [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space)))
+              (list 1)]
+             [(list '(#\newline)
+                    '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space))
+              (list (aux-ignore 1)
+                    aux-parse-ol-list)])
+
+  (define-FA aux-parse-ol-list
+             (lambda (sxml port) `(li ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(()))
+              (list (aux-ignore 3)
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
 
   )

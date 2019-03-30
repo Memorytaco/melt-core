@@ -169,6 +169,10 @@
                     '((#\newline #\space))
                     '(#\` #\` #\`)
                     '(#\#)
+                    '(#\- #\space #\[ (#\space) #\] #\space)
+                    '(#\* #\space #\[ (#\space) #\] #\space)
+                    '(#\* #\space #\[ (! #\space) #\] #\space)
+                    '(#\- #\space #\[ (! #\space) #\] #\space)
                     '(#\* #\space)
                     '(#\- #\space)
                     '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
@@ -179,6 +183,10 @@
                     (aux-ignore 1)
                     pattern-parse-block-code
                     pattern-parse-header
+                    aux-parse-task-list-unchecked
+                    aux-parse-task-list-unchecked
+                    aux-parse-task-list-checked
+                    aux-parse-task-list-checked
                     pattern-parse-ul-list
                     pattern-parse-ul-list
                     pattern-parse-ol-list
@@ -208,6 +216,7 @@
                     '(#\*)
                     '(#\_)
                     '(#\$ #\$)
+                    '(#\~ #\~)
                     '(()))
               (list aux-escape
                     aux-paragraph-space
@@ -218,6 +227,7 @@
                     pattern-parse-em
                     pattern-parse-em
                     pattern-parse-math
+                    pattern-parse-strike-through
                     aux-common)])
 
   (define (aux-paragraph-space sxml port)
@@ -260,7 +270,8 @@
                     '(#\_ #\_)
                     '(#\*)
                     '(#\_)
-                    '(#\$)
+                    '(#\$ #\$)
+                    '(#\~ #\~)
                     '(()))
               (list aux-escape
                     aux-paragraph-space
@@ -271,7 +282,149 @@
                     pattern-parse-em
                     pattern-parse-em
                     pattern-parse-math
+                    pattern-parse-strike-through
                     aux-common)))
+
+  ;; ========================   list =============================
+  ;; for the list context
+  ;; return ul or ol
+  (define-FA pattern-parse-ul-list
+             (lambda (sxml port) (cons 'ul sxml))
+             [(list '(#\newline (! #\* #\-) (! #\space)))
+              (list 1)]
+             [(list '(#\newline)
+                    '(#\* #\space)
+                    '(#\- #\space))
+              (list (aux-ignore 1)
+                    aux-parse-ul-list
+                    aux-parse-ul-list)])
+
+  (define-FA aux-parse-ul-list
+             (lambda (sxml port) `(li ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '(#\* #\space)
+                    '(#\- #\space)
+                    '(#\~ #\~)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(()))
+              (list (aux-ignore 2)
+                    (aux-ignore 2)
+                    pattern-parse-strike-through
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
+
+  (define-FA pattern-parse-ol-list
+             (lambda (sxml port) (cons 'ol sxml))
+             [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space)))
+              (list 1)]
+             [(list '(#\newline)
+                    '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space))
+              (list (aux-ignore 1)
+                    aux-parse-ol-list)])
+
+  (define-FA aux-parse-ol-list
+             (lambda (sxml port) `(li ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
+                    '(#\~ #\~)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(()))
+              (list (aux-ignore 3)
+                    pattern-parse-strike-through
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
+
+  ;; ====================== task list =================
+  (define-FA pattern-parse-task-list
+             (lambda (sxml port) (cons 'ul sxml))
+             [(list '(#\newline (! #\- #\*)))
+              (list 1)]
+             [(list '(#\newline)
+                    '(#\- #\space #\[ (#\space) #\] #\space)
+                    '(#\* #\space #\[ (#\space) #\] #\space)
+                    '(#\* #\space #\[ (! #\space) #\] #\space)
+                    '(#\- #\space #\[ (! #\space) #\] #\space))
+              (list (aux-ignore 1)
+                    aux-parse-task-list-unchecked
+                    aux-parse-task-list-unchecked
+                    aux-parse-task-list-checked
+                    aux-parse-task-list-checked)])
+
+  (define-FA aux-parse-task-list-checked
+             (lambda (sxml port) `(li (input (@ (checked "")
+                                                (disabled "")
+                                                (type "checkbox")))
+                                      ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '(#\\)
+                    '(#\- #\space #\[ (! #\space) #\] #\space)
+                    '(#\* #\space #\[ (! #\space) #\] #\space)
+                    '(#\~ #\~)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(())
+                    )
+              (list aux-escape
+                    (aux-ignore 6)
+                    (aux-ignore 6)
+                    pattern-parse-strike-through
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
+
+  (define-FA aux-parse-task-list-unchecked
+             (lambda (sxml port) `(li (input (@ (disabled "")
+                                                (type "checkbox")))
+                                      ,sxml))
+             [(list '(#\newline))
+              (list 0)]
+             [(list '(#\\)
+                    '(#\- #\space #\[ (#\space) #\] #\space)
+                    '(#\* #\space #\[ (#\space) #\] #\space)
+                    '(#\~ #\~)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(())
+                    )
+              (list aux-escape
+                    (aux-ignore 6)
+                    (aux-ignore 6)
+                    pattern-parse-strike-through
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
+
 
   ;;;   =============== header ===============
   ;; return the header
@@ -335,7 +488,6 @@
          [else (aux-parse-block-code-cont
                  (scone sxml (read-char port)) port)])]))
 
-
   ;; =================== inline code ===========================
   ;; return the code type
   (define-FA pattern-parse-inline-code
@@ -377,7 +529,7 @@
               (list aux-escape
                     aux-common)])
 
-  ;; ===================== em    ================================
+  ;; ===================== em ================================
   ;; return the emphsis
   (define-FA pattern-parse-em
              (lambda (sxml port) (cons 'em sxml))
@@ -400,6 +552,33 @@
                     '(()))
               (list aux-escape
                     aux-common)))
+
+  ;; ====================== strike through ================================
+  (define-FA pattern-parse-strike-through
+             (lambda (sxml port) (list 'del sxml))
+             [(list '(() #\~ #\~)) (list 3)]
+             [(list '(#\~ #\~)
+                    '(()))
+              (list (aux-ignore 2)
+                    aux-parse-strike-through)])
+
+  (define-FA aux-parse-strike-through
+             (lambda (sxml port) (scone sxml (peek-char port)))
+             [(list '(() #\~ #\~)) (list 0)]
+             [(list '(#\\)
+                    '(#\* #\*)
+                    '(#\_ #\_)
+                    '(#\*)
+                    '(#\_)
+                    '(#\`)
+                    '(()))
+              (list aux-escape
+                    pattern-parse-strong
+                    pattern-parse-strong
+                    pattern-parse-em
+                    pattern-parse-em
+                    pattern-parse-inline-code
+                    aux-common)])
 
   ;; ====================== hr ==================================
   ;; return (hr)
@@ -469,82 +648,19 @@
        `(@ (src ,(apply string sxml)))]
       [else (aux-parse-img-end (scone sxml (read-char port)) port)]))
 
-  ;; ====================== math block (need other support ========================
+  ;; ====================== math block (need external support ========================
   (define-FA pattern-parse-math
              (lambda (sxml port) (list 'span '(@ (class "math")) sxml))
              [(list '(() #\$ #\$)) (list 3)]
              [(list '(#\$ #\$)
                     '(()))
               (list (aux-ignore 2)
-                    aux-parse-unchanged)])
+                    aux-parse-math)])
 
-  (define-FA aux-parse-unchanged
+  (define-FA aux-parse-math
              (lambda (sxml port) (scone sxml (peek-char port)))
              [(list '(() #\$ #\$)) (list 0)]
              [(list '(()))
               (list aux-common)])
-
-  ;; ========================   list =============================
-  ;; for the list context
-  ;; return ul or ol
-  (define-FA pattern-parse-ul-list
-             (lambda (sxml port) (cons 'ul sxml))
-             [(list '(#\newline (! #\* #\-) (! #\space)))
-              (list 1)]
-             [(list '(#\newline)
-                    '(#\* #\space)
-                    '(#\- #\space))
-              (list (aux-ignore 1)
-                    aux-parse-ul-list
-                    aux-parse-ul-list)])
-
-  (define-FA aux-parse-ul-list
-             (lambda (sxml port) `(li ,sxml))
-             [(list '(#\newline))
-              (list 0)]
-             [(list '(#\* #\space)
-                    '(#\- #\space)
-                    '(#\* #\*)
-                    '(#\_ #\_)
-                    '(#\*)
-                    '(#\_)
-                    '(#\`)
-                    '(()))
-              (list (aux-ignore 2)
-                    (aux-ignore 2)
-                    pattern-parse-strong
-                    pattern-parse-strong
-                    pattern-parse-em
-                    pattern-parse-em
-                    pattern-parse-inline-code
-                    aux-common)])
-
-  (define-FA pattern-parse-ol-list
-             (lambda (sxml port) (cons 'ol sxml))
-             [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space)))
-              (list 1)]
-             [(list '(#\newline)
-                    '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space))
-              (list (aux-ignore 1)
-                    aux-parse-ol-list)])
-
-  (define-FA aux-parse-ol-list
-             (lambda (sxml port) `(li ,sxml))
-             [(list '(#\newline))
-              (list 0)]
-             [(list '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
-                    '(#\* #\*)
-                    '(#\_ #\_)
-                    '(#\*)
-                    '(#\_)
-                    '(#\`)
-                    '(()))
-              (list (aux-ignore 3)
-                    pattern-parse-strong
-                    pattern-parse-strong
-                    pattern-parse-em
-                    pattern-parse-em
-                    pattern-parse-inline-code
-                    aux-common)])
 
   )

@@ -14,7 +14,7 @@
 
            (display (string-append (gem "[37;1m" "melt")
 								   (gem "[38;5;15m" " version ")
-								   (gem "[38;5;165m" "0.0.3")
+								   (gem "[38;5;165m" "0.0.3=3")
 								   "\n")))
 
 		 ;; the basic information

@@ -1,0 +1,48 @@
+(library (melt lib time)
+         (export string->date
+                 month->number)
+         (import (scheme))
+
+         (define months-number-alist
+           '(("Jan" . 1)
+             ("Feb" . 2)
+             ("Mar" . 3)
+             ("Apr" . 4)
+             ("May" . 5)
+             ("Jun" . 6)
+             ("Jul" . 7)
+             ("Aug" . 8)
+             ("Set" . 9)
+             ("Oct" . 10)
+             ("Nov" . 11)
+             ("Dec" . 12)))
+
+         (define (month->number str)
+           (cdr (assp (lambda (obj)
+                        (string=? obj str)) months-number-alist)))
+
+         (define (string->date str)
+           (define (read-one-item value dele port)
+             (let ((char (read-char port)))
+               (if (or (eq? char dele)
+                       (eof-object? char))
+                   (apply string value)
+                   (read-one-item (append value (list char)) dele port))))
+           (let* ((port (open-input-string str))
+                  (empty (read-one-item (list) #\space port))
+                  (mon (read-one-item (list) #\space port))
+                  (day (read-one-item (list) #\space port))
+                  (hour (read-one-item (list) #\: port))
+                  (min (read-one-item (list) #\: port))
+                  (sec (read-one-item (list) #\space port))
+                  (year (read-one-item (list) #\space port)))
+             (make-date 0
+                        (string->number sec)
+                        (string->number min)
+                        (string->number hour)
+                        (string->number day)
+                        (month->number mon)
+                        (string->number year))))
+
+         )
+

@@ -91,8 +91,8 @@
           ((null? patterns) #f)
           (let ((cur-pattern (car patterns)))
             (if (pattern-match cur-pattern port)
-                (cc ((lambda (item) (cur-context (scone sxml item) port))
-                     ((cdr (assp (g-check-list cur-pattern) key-context-list)) (list) port)))))))))
+                (cc ((lambda (item) (cur-context (scone sxml item) port cur-context))
+                     ((cdr (assp (g-check-list cur-pattern) key-context-list)) (list) port cur-context)))))))))
 
   ;; check each terminate pattern and end the context if matched returning value.
   ;; forward-numbers list is to forward the port position if matched.
@@ -115,14 +115,16 @@
   ;; TODO 之后可以在else后边加入错误处理
   (define-syntax define-FA
     (syntax-rules ()
-      [(_ name end-lambda (end-patterns number-list) (trans-patterns FAs) )
+      [(_ name pre-lambda end-lambda (end-patterns number-list) (trans-patterns FAs) )
        (define name
-         (lambda (sxml port)
-           (cond
-             [(context-return (delay (end-lambda sxml port))
-                              port end-patterns number-list)]
-             [(context-transform sxml port trans-patterns FAs name)]
-             [else (error name "no proper transform context definition")])))]))
+         (lambda (sxml port pre-context)
+           (if (equal? pre-context name)
+               (cond
+                 [(context-return (delay (end-lambda sxml port))
+                                  port end-patterns number-list)]
+                 [(context-transform sxml port trans-patterns FAs name)]
+                 [else (error name "no proper transform context definition")])
+               (name (scone sxml (pre-lambda sxml port)) port name))))]))
 
   ;; (g 'x 3) ==> (x x x)
   (define (g ele num)
@@ -140,22 +142,22 @@
 
   ;; define makrdown-> sxml
   (define (markdown->sxml port)
-    (pattern-top-parse (list) port))
+    (pattern-top-parse (list) port #f))
 
   ;;; =========================== A ===== U ====== X ======================
   ;; return the escaped char
 
-  (define (aux-escape sxml port)
+  (define (aux-escape sxml port . idle)
     (char-forward port 1)
     (read-char port))
 
   ;; generate procedure which ignore 'number' chars
   (define (aux-ignore number)
-    (lambda (sxml port)
+    (lambda (sxml port . idle)
       (char-forward port number) '()))
 
   ;; read one char
-  (define (aux-common sxml port)
+  (define (aux-common sxml port . idle)
     (let ((char (read-char port)))
       (if (eof-object? char)
           '()
@@ -163,7 +165,8 @@
 
   ;; the top environment(context)
   (define-FA pattern-top-parse
-             (lambda (sxml port) `(,sxml))
+             (lambda (sxml port) '())
+             (lambda (sxml port) sxml)
              [(list `(,eof)) '(0)]
              [(list '(#\\ ())
                     '((#\newline #\space))
@@ -197,6 +200,7 @@
   ;;; ==================== paragraph ===================
   ;; return the paragraph
   (define-FA pattern-parse-paragraph
+             (lambda (sxml port) '())
              (lambda (sxml port) `(p ,sxml))
              [(list '(#\newline #\newline)
                     '(#\newline #\` #\` #\`)
@@ -230,28 +234,13 @@
                     pattern-parse-strike-through
                     aux-common)])
 
-  (define (aux-paragraph-space sxml port)
+  (define (aux-paragraph-space sxml port . idle)
     (context-return (delay #\space) port (list '(#\newline)) (list 1)))
 
   ;; =====================  block-quote =======================
   ;; return block quote
   (define-FA pattern-parse-block-quote
-             (lambda (sxml port) sxml)
-             ((list '(#\newline #\newline)
-                    '(#\newline #\` #\` #\`)
-                    '(#\newline #\#)
-                    '(#\newline #\* #\space)
-                    '(#\newline #\- #\space)
-                    '(#\newline (#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
-                    '(#\newline #\! #\[)
-                    '(#\newline #\> #\space))
-              (list 2 1 1 1 1 1 1 1))
-             ((list '(#\> #\space)
-                    '(()))
-              (list (aux-ignore 2)
-                    aux-parse-block-quote)))
-
-  (define-FA aux-parse-block-quote
+             (aux-ignore 2)
              (lambda (sxml port) `(blockquote (p ,sxml)))
              ((list '(#\newline #\newline)
                     '(#\newline #\` #\` #\`)
@@ -261,7 +250,7 @@
                     '(#\newline (#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\newline #\! #\[)
                     '(#\newline #\> #\space))
-              (list 0 0 0 0 0 0 0 0))
+              (list 2 1 1 1 1 1 1 1))
              ((list '(#\\)
                     '(#\newline)
                     '(#\`)
@@ -289,6 +278,7 @@
   ;; for the list context
   ;; return ul or ol
   (define-FA pattern-parse-ul-list
+             (lambda (sxml port) '())
              (lambda (sxml port) (cons 'ul sxml))
              [(list '(#\newline (! #\* #\-) (! #\space)))
               (list 1)]
@@ -300,6 +290,7 @@
                     aux-parse-ul-list)])
 
   (define-FA aux-parse-ul-list
+             (lambda (sxml port) '())
              (lambda (sxml port) `(li ,sxml))
              [(list '(#\newline))
               (list 0)]
@@ -323,6 +314,7 @@
                     aux-common)])
 
   (define-FA pattern-parse-ol-list
+             (lambda (sxml port) '())
              (lambda (sxml port) (cons 'ol sxml))
              [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space)))
               (list 1)]
@@ -332,6 +324,7 @@
                     aux-parse-ol-list)])
 
   (define-FA aux-parse-ol-list
+             (lambda (sxml port) '())
              (lambda (sxml port) `(li ,sxml))
              [(list '(#\newline))
               (list 0)]
@@ -354,6 +347,7 @@
 
   ;; ====================== task list =================
   (define-FA pattern-parse-task-list
+             (lambda (sxml port) '())
              (lambda (sxml port) (cons 'ul sxml))
              [(list '(#\newline (! #\- #\*)))
               (list 1)]
@@ -369,6 +363,7 @@
                     aux-parse-task-list-checked)])
 
   (define-FA aux-parse-task-list-checked
+             (lambda (sxml port) '())
              (lambda (sxml port) `(li (input (@ (checked "")
                                                 (disabled "")
                                                 (type "checkbox")))
@@ -384,8 +379,7 @@
                     '(#\*)
                     '(#\_)
                     '(#\`)
-                    '(())
-                    )
+                    '(()))
               (list aux-escape
                     (aux-ignore 6)
                     (aux-ignore 6)
@@ -398,6 +392,7 @@
                     aux-common)])
 
   (define-FA aux-parse-task-list-unchecked
+             (lambda (sxml port) '())
              (lambda (sxml port) `(li (input (@ (disabled "")
                                                 (type "checkbox")))
                                       ,sxml))
@@ -412,8 +407,7 @@
                     '(#\*)
                     '(#\_)
                     '(#\`)
-                    '(())
-                    )
+                    '(()))
               (list aux-escape
                     (aux-ignore 6)
                     (aux-ignore 6)
@@ -429,12 +423,13 @@
   ;;;   =============== header ===============
   ;; return the header
   (define-FA pattern-parse-header
-             (lambda (sxml port) `(,sxml))
+             (lambda (sxml port) '())
+             (lambda (sxml port) sxml)
              [(list '(#\newline)) (list 1)]
              [(list '(#\#))
               (list aux-parse-header)])
 
-  (define (aux-parse-header sxml port)
+  (define (aux-parse-header sxml port . idle)
     (cond
       [(pattern-match '(#\newline) port)
        sxml]
@@ -461,6 +456,7 @@
   ;; =================  block code ==========================
   ;; return the block code
   (define-FA pattern-parse-block-code
+             (lambda (sxml port) '())
              (lambda (sxml port) `(pre (code ,(car sxml) ,(car (cdr sxml)))))
              ((list '(#\` #\` #\` #\newline)) (list 4))
              ((list '(#\` #\` #\`)
@@ -469,61 +465,41 @@
                     aux-parse-block-code-cont)))
 
   (define aux-parse-block-code-type
-    (case-lambda
-      [(sxml port)
-       (cond
-         [(context-return (lambda () `(@ (class ,(apply string sxml))))
-                          port '((#\newline)) '(1))]
-         [(pattern-match '(#\` #\` #\` #\space) port)
-          (char-forward port 4)
-          (aux-parse-block-code-type (scone sxml (read-char port)) port)]
-         [else (aux-parse-block-code-type (scone sxml (read-char port)) port)])]))
+    (lambda (sxml port . idle)
+      (cond
+        [(context-return (lambda () `(@ (class ,(apply string sxml))))
+                         port '((#\newline)) '(1))]
+        [(pattern-match '(#\` #\` #\` #\space) port)
+         (char-forward port 4)
+         (aux-parse-block-code-type (scone sxml (read-char port)) port)]
+        [else (aux-parse-block-code-type (scone sxml (read-char port)) port)])))
 
   (define aux-parse-block-code-cont
-    (case-lambda
-      [(sxml port)
-       (cond
-         [(pattern-match '(#\` #\` #\` #\newline) port)
-          sxml]
-         [else (aux-parse-block-code-cont
-                 (scone sxml (read-char port)) port)])]))
+    (lambda (sxml port . idle)
+      (cond
+        [(pattern-match '(#\` #\` #\` #\newline) port)
+         sxml]
+        [else (aux-parse-block-code-cont
+                (scone sxml (read-char port)) port)])))
 
   ;; =================== inline code ===========================
   ;; return the code type
   (define-FA pattern-parse-inline-code
+             (aux-ignore 1)
              (lambda (sxml port) (cons 'code sxml))
-             [(list '(() #\`)) (list 2)]
-             [(list '(#\`)
-                    '(()))
-              (list (aux-ignore 1)
-                    aux-parse-inline-code)])
-
-  (define-FA aux-parse-inline-code
-             (lambda (sxml port) (scone sxml (peek-char port)))
-             [(list '(() #\`)) (list 0)]
-             [(list '(#\\ ())
+             [(list '(#\`)) (list 1)]
+             [(list '(#\\)
                     '(()))
               (list aux-escape
                     aux-common)])
 
   ;; ==================== strong =============================
   (define-FA pattern-parse-strong
+             (aux-ignore 2)
              (lambda (sxml port) (cons 'strong sxml))
-             [(list '(() #\* #\*)
-                    '(() #\_ #\_))
-              (list 3 3)]
              [(list '(#\* #\*)
-                    '(#\_ #\_)
-                    '(()))
-              (list (aux-ignore 2)
-                    (aux-ignore 2)
-                    aux-parse-strong)])
-
-  (define-FA aux-parse-strong
-             (lambda (sxml port) (scone sxml (peek-char port)))
-             [(list '(() #\* #\*)
-                    '(() #\_ #\_))
-              (list 0 0)]
+                    '(#\_ #\_))
+              (list 2 2)]
              [(list '(#\\)
                     '(()))
               (list aux-escape
@@ -532,22 +508,11 @@
   ;; ===================== em ================================
   ;; return the emphsis
   (define-FA pattern-parse-em
+             (aux-ignore 1)
              (lambda (sxml port) (cons 'em sxml))
-             ((list '(() #\*)
-                    '(() #\_))
-              (list 2 2))
              ((list '(#\*)
-                    '(#\_)
-                    '(()))
-              (list (aux-ignore 1)
-                    (aux-ignore 1)
-                    aux-parse-em)))
-
-  (define-FA aux-parse-em
-             (lambda (sxml port) (scone sxml (peek-char port)))
-             ((list '(() #\*)
-                    '(() #\_))
-              (list 0 0))
+                    '(#\_))
+              (list 1 1))
              ((list '(#\\)
                     '(()))
               (list aux-escape
@@ -555,16 +520,9 @@
 
   ;; ====================== strike through ================================
   (define-FA pattern-parse-strike-through
+             (aux-ignore 2)
              (lambda (sxml port) (list 'del sxml))
-             [(list '(() #\~ #\~)) (list 3)]
-             [(list '(#\~ #\~)
-                    '(()))
-              (list (aux-ignore 2)
-                    aux-parse-strike-through)])
-
-  (define-FA aux-parse-strike-through
-             (lambda (sxml port) (scone sxml (peek-char port)))
-             [(list '(() #\~ #\~)) (list 0)]
+             [(list '(#\~ #\~)) (list 2)]
              [(list '(#\\)
                     '(#\* #\*)
                     '(#\_ #\_)
@@ -583,16 +541,15 @@
   ;; ====================== hr ==================================
   ;; return (hr)
   (define-FA pattern-parse-hr
+             (lambda (sxml port) '())
              (lambda (sxml port) '(hr))
              ((list '(#\newline)) '(1))
              ((list '(()))
-              (list aux-parse-hr)))
-
-  (define (aux-parse-hr sxml port)
-    (read-char port) '())
+              (list aux-common)))
 
   ;; ====================== link ==================================
   (define-FA pattern-parse-link
+             (lambda (sxml port) '())
              (lambda (sxml port) `(a ,(car (cdr sxml)) ,(car sxml)))
              ((list '(#\))) '(1))
              ((list '(#\()
@@ -600,7 +557,7 @@
               (list aux-parse-link-end
                     aux-parse-link-begin)))
 
-  (define (aux-parse-link-begin sxml port)
+  (define (aux-parse-link-begin sxml port . idle)
     (cond
       [(pattern-match '(#\[) port)
        (char-forward port 1)
@@ -610,7 +567,7 @@
        sxml]
       [else (aux-parse-link-begin (scone sxml (read-char port)) port)]))
 
-  (define (aux-parse-link-end sxml port)
+  (define (aux-parse-link-end sxml port . idle)
     (cond
       [(pattern-match '(#\() port)
        (char-forward port 1)
@@ -622,6 +579,7 @@
   ;; ======================= img ================================
   ;; return an img
   (define-FA pattern-parse-img
+             (lambda (sxml port) '())
              (lambda (sxml port) `(img ,(car (cdr sxml)) ,(car sxml)))
              ((list '(#\))) '(1))
              ((list '(#\()
@@ -629,7 +587,7 @@
               (list aux-parse-img-end
                     aux-parse-img-begin)))
 
-  (define (aux-parse-img-begin sxml port)
+  (define (aux-parse-img-begin sxml port . idle)
     (cond
       [(pattern-match '(#\! #\[) port)
        (char-forward port 2)
@@ -639,7 +597,7 @@
        sxml]
       [else (aux-parse-img-begin (scone sxml (read-char port)) port)]))
 
-  (define (aux-parse-img-end sxml port)
+  (define (aux-parse-img-end sxml port . idle)
     (cond
       [(pattern-match '(#\() port)
        (char-forward port 1)
@@ -648,18 +606,11 @@
        `(@ (src ,(apply string sxml)))]
       [else (aux-parse-img-end (scone sxml (read-char port)) port)]))
 
-  ;; ====================== math block (need external support ========================
+  ;; ========== math block (need external support =======
   (define-FA pattern-parse-math
+             (aux-ignore 2)
              (lambda (sxml port) (list 'span '(@ (class "math")) sxml))
-             [(list '(() #\$ #\$)) (list 3)]
-             [(list '(#\$ #\$)
-                    '(()))
-              (list (aux-ignore 2)
-                    aux-parse-math)])
-
-  (define-FA aux-parse-math
-             (lambda (sxml port) (scone sxml (peek-char port)))
-             [(list '(() #\$ #\$)) (list 0)]
+             [(list '(#\$ #\$)) (list 2)]
              [(list '(()))
               (list aux-common)])
 

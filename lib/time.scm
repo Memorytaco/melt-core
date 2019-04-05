@@ -1,9 +1,10 @@
 (library (melt lib time)
-         (export string->date
+         (export date-and-time-string->date
                  month->number)
-         (import (scheme))
+         (import (scheme)
+                 (melt lib string))
 
-         (define months-number-alist
+         (define %%months-number-alist
            '(("Jan" . 1)
              ("Feb" . 2)
              ("Mar" . 3)
@@ -19,30 +20,25 @@
 
          (define (month->number str)
            (cdr (assp (lambda (obj)
-                        (string=? obj str)) months-number-alist)))
+                        (string=? obj str)) %%months-number-alist)))
 
-         (define (string->date str)
-           (define (read-one-item value dele port)
-             (let ((char (read-char port)))
-               (if (or (eq? char dele)
-                       (eof-object? char))
-                   (apply string value)
-                   (read-one-item (append value (list char)) dele port))))
-           (let* ((port (open-input-string str))
-                  (empty (read-one-item (list) #\space port))
-                  (mon (read-one-item (list) #\space port))
-                  (day (read-one-item (list) #\space port))
-                  (hour (read-one-item (list) #\: port))
-                  (min (read-one-item (list) #\: port))
-                  (sec (read-one-item (list) #\space port))
-                  (year (read-one-item (list) #\space port)))
-             (make-date 0
-                        (string->number sec)
-                        (string->number min)
-                        (string->number hour)
-                        (string->number day)
-                        (month->number mon)
-                        (string->number year))))
+         (define (date-and-time-string->date str)
+           (let* ((substr-ls (string-split str #\space))
+                  (mon (list-ref substr-ls 1))
+                  (day (list-ref substr-ls 2))
+                  (time (list-ref substr-ls 3))
+                  (year (list-ref substr-ls 4)))
+             (let* ((time-str-ls (string-split time #\:))
+                    (hour (list-ref time-str-ls 0))
+                    (minute (list-ref time-str-ls 1))
+                    (second (list-ref time-str-ls 2)))
+               (make-date 0
+                          (string->number second)
+                          (string->number minute)
+                          (string->number hour)
+                          (string->number day)
+                          (month->number mon)
+                          (string->number year)))))
 
          )
 

@@ -11,8 +11,6 @@
                  alist-delete
                  alist?
                  alist-cons
-                 string-split-dual
-                 string-trim
                  list-directory
                  while)
          (import (scheme)
@@ -141,41 +139,6 @@
          (define basename
            (lambda (path)
              (path-last (path-root path))))
-
-         (define string-split-dual
-           (lambda (arg-string char)
-             (define first-position
-               (lambda (arg-char-list char)
-                 (do ((char-list arg-char-list (cdr char-list))
-                      (end? #f)
-                      (number 0 (+ 1 number)))
-                   (end? (- number 1))
-                   (if (eq? (car char-list)
-                            char)
-                       (set! end? #t))))) ;; zero based
-             (let* ((char-list (string->list arg-string))
-                    (position (first-position char-list char)))
-               (list (apply string (list-head char-list position))
-                     (apply string (list-tail char-list (+ 1 position)))))))
-
-         (define string-trim
-           (lambda (arg-string symbol)
-             (cond
-               [(eq? symbol 'prefix)
-                (do ((string-list (string->list arg-string))
-                     (end? #f))
-                  [end? (apply string string-list)]
-                  (if (equal? (car string-list)
-                              #\space)
-                      (set! string-list (cdr string-list))
-                      (set! end? #t)))]
-               [(eq? symbol 'suffix)
-                (apply string (reverse (string->list (string-trim (apply string (reverse (string->list arg-string))) 'prefix))))]
-               [(eq? symbol 'both)
-                (string-trim (string-trim arg-string 'prefix)
-                             'suffix)]
-               [else (error symbol "Not proper symbol!")])))
-
 
          (define alist-cons
            (lambda (key obj alist)

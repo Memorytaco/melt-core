@@ -472,6 +472,9 @@
         [(pattern-match '(#\` #\` #\` #\space) port)
          (char-forward port 4)
          (aux-parse-block-code-type (scone sxml (read-char port)) port)]
+        [(pattern-match '(#\` #\` #\`) port)
+         (char-forward port 3)
+         (aux-parse-block-code-type (scone sxml (read-char port)) port)]
         [else (aux-parse-block-code-type (scone sxml (read-char port)) port)])))
 
   (define aux-parse-block-code-cont

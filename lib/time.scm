@@ -18,10 +18,12 @@
              ("Nov" . 11)
              ("Dec" . 12)))
 
+         ;; convert string like Dec to number
          (define (month->number str)
            (cdr (assp (lambda (obj)
                         (string=? obj str)) %%months-number-alist)))
 
+         ;; convert (date-and-time) output string to a date
          (define (date-and-time-string->date str)
            (let* ((substr-ls (string-split str #\space))
                   (mon (list-ref substr-ls 1))

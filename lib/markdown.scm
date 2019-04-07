@@ -123,7 +123,7 @@
                  [(context-return (delay (end-lambda sxml port))
                                   port end-patterns number-list)]
                  [(context-transform sxml port trans-patterns FAs name)]
-                 [else (error name "no proper transform context definition")])
+                 [else (error 'define-FA "no proper transform context definition")])
                (name (scone sxml (pre-lambda sxml port)) port name))))]))
 
   ;; (g 'x 3) ==> (x x x)
@@ -172,6 +172,8 @@
                     '((#\newline #\space))
                     '(#\` #\` #\`)
                     '(#\#)
+                    '(#\* #\* #\*)
+                    '(#\- #\- #\-)
                     '(#\- #\space #\[ (#\space) #\] #\space)
                     '(#\* #\space #\[ (#\space) #\] #\space)
                     '(#\* #\space #\[ (! #\space) #\] #\space)
@@ -186,6 +188,8 @@
                     (aux-ignore 1)
                     pattern-parse-block-code
                     pattern-parse-header
+                    pattern-parse-hr
+                    pattern-parse-hr
                     aux-parse-task-list-unchecked
                     aux-parse-task-list-unchecked
                     aux-parse-task-list-checked
@@ -297,6 +301,7 @@
              [(list '(#\* #\space)
                     '(#\- #\space)
                     '(#\~ #\~)
+                    '(#\$ #\$)
                     '(#\* #\*)
                     '(#\_ #\_)
                     '(#\*)
@@ -306,6 +311,7 @@
               (list (aux-ignore 2)
                     (aux-ignore 2)
                     pattern-parse-strike-through
+                    pattern-parse-math
                     pattern-parse-strong
                     pattern-parse-strong
                     pattern-parse-em
@@ -330,6 +336,7 @@
               (list 0)]
              [(list '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space)
                     '(#\~ #\~)
+                    '(#\$ #\$)
                     '(#\* #\*)
                     '(#\_ #\_)
                     '(#\*)
@@ -338,6 +345,7 @@
                     '(()))
               (list (aux-ignore 3)
                     pattern-parse-strike-through
+                    pattern-parse-math
                     pattern-parse-strong
                     pattern-parse-strong
                     pattern-parse-em

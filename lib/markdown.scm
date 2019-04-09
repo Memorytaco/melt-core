@@ -284,8 +284,9 @@
   (define-FA pattern-parse-ul-list
              (lambda (sxml port) '())
              (lambda (sxml port) (cons 'ul sxml))
-             [(list '(#\newline (! #\* #\-) (! #\space)))
-              (list 1)]
+             [(list '(#\newline (! #\* #\-) (! #\space))
+                    '(#\newline (! #\* #\-) ()))
+              (list 1 1)]
              [(list '(#\newline)
                     '(#\* #\space)
                     '(#\- #\space))
@@ -322,8 +323,9 @@
   (define-FA pattern-parse-ol-list
              (lambda (sxml port) '())
              (lambda (sxml port) (cons 'ol sxml))
-             [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space)))
-              (list 1)]
+             [(list '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (! #\.) (! #\space))
+                    '(#\newline (! #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) ()))
+              (list 1 1)]
              [(list '(#\newline)
                     '((#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) #\. #\space))
               (list (aux-ignore 1)

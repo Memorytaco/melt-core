@@ -1,9 +1,16 @@
 (library
   (melt uutil)
-  (export parse-posts)
+  (export parse-posts
+          flatten
+          get-md-attr
+          get-md-title
+          get-md-post-title-list
+          scone!)
   (import (scheme)
           (melt post)
           (melt lib file)
+          (melt lib console)
+          (melt parser markdown)
           (melt data)
           (melt parser))
 
@@ -35,5 +42,29 @@
                                       (name . ,(path-last (path-root (car obj-ls)))))
                                     (car raw-sxml)
                                     (car (cdr raw-sxml))))))))))
+
+  ;; return the assoc list of a markdown post
+  (define (get-md-attr file-name)
+    (call-with-input-file file-name
+                          (lambda (port)
+                            (parse-markdown-attr port))))
+
+  ;; return the markdown post title, title is a string
+  (define (get-md-title file-name)
+    (cdr (assq 'title (get-md-attr file-name))))
+
+  ;; accept a directory and return pairs like (file-name . post-title)
+  (define (get-md-post-title-list pdirectory)
+    (let ((post-title-list '())
+          (items (directory-list pdirectory)))
+      (do ((files (map string-append
+                       (make-list (length items) (string-append pdirectory "/"))
+                       items)
+                  (cdr files)))
+        ((null? files) post-title-list)
+        (if (file-regular? (car files))
+            (scone! post-title-list `(,(path-root (path-last (car files))) . ,(get-md-title (car files))))))))
+
+
 
   )

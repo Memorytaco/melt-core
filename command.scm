@@ -55,12 +55,15 @@
          (import (melt command init))
          (import (melt command exec))
          (import (melt command serve))
+         (import (melt command post))
 
          (add-command init
                       %builtin-commands)
          (add-command exec
                       %builtin-commands)
          (add-command serve
+                      %builtin-commands)
+         (add-command post
                       %builtin-commands)
 
          )

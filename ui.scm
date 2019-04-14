@@ -11,16 +11,17 @@
           (melt srfi match))
 
   (define (show-version)
-    (gem:display (gem:text "[37;1m" "melt")
+    (gemd:info (string-append
+                 (gem:text "[37;1m" "melt")
                  (gem:text "[38;5;15m" " version ")
-                 (gem:text "[38;5;165m" "0.0.5")
-                 "\n"))
+                 (gem:text "[38;5;165m" "0.0.5")) ))
 
   ;; the basic information
   (define (introduction)
     (gem:display (gem:text "[37m" "This is melt! Meta Excellent Local Note System.\n")
                  (gem:text "[37m" "Please use \"-h\" or \"--help\" to get further help.\nFor more information please follow")
-                 (gem:text "[36m" " github io page.\n")))
+                 (gem:text "[36m" " github io page.\n"))
+    (gemd:info "github blog https://haxpeta.github.io/Lago"))
 
   ;; basic help information
   (define (help)

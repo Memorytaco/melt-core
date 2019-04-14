@@ -4,23 +4,31 @@
           update-data!
           data-keys
           data-values
-          data-accessors
+          data-guards
           data->alist
-          data-acces-query
+          data-guard-query
           data-value-query)
   (import (scheme)
           (melt cell)
           (melt utils))
 
+  ;; !!!!!! need to take use of gurd of cell
+
   ;; accept nothing or list of keys and list of values
   ;; keys are a list symbols
   ;; values are corresponded to the keys
+  ;; or an assoc list
   (define create-data
     (lambda args
       (cond
         [(null? args)
          (make-cell '())]
-        [(and (list? (car args)) (list? (cadr args)))
+        [(and (eq? 1 (length args)) (alist? (car args)))
+         ((lambda (keys values)
+            (make-cell (map cons keys (map make-cell values))))
+          (map car (car args))
+          (map cdr (car args)))]
+        [(and (eq? 2 (length args)) (list? (car args)))
          ((lambda (keys values)
             (make-cell (map cons keys (map make-cell values))))
           (car args)
@@ -37,7 +45,7 @@
     (map (lambda (proc) (proc)) (map cdr (data))))
 
   ;; return a list of accessors
-  (define (data-accessors data)
+  (define (data-guards data)
     (map cdr (data)))
 
   ;; delete one item in data, return left item
@@ -59,7 +67,7 @@
         #f))
 
   ;; query one accessor of one item
-  (define (data-acces-query key data)
+  (define (data-guard-query key data)
     (if (memv key (data-keys data))
         (cdr (assq key (data)))
         #f))
@@ -88,7 +96,7 @@
            (do ((keys (map car k-values) (cdr keys)))
              ((null? keys) data)
              (if (memv (car keys) (data-keys data))
-                 ((data-acces-query (car keys) data)
+                 ((data-guard-query (car keys) data)
                   (cdr (assq (car keys) k-values)))
                  (%add-data! (car keys) (cdr (assq (car keys) k-values)) data)))]
           [(procedure? k-values)

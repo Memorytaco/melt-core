@@ -8,6 +8,7 @@
           gemd:info
           gemd:warn
           gemd:error
+          gemd:help
           gemd:item)
   (import (scheme)
           (melt utils)
@@ -33,7 +34,7 @@
   ;; assoc-list: ((code-sequence . str) ... )
   (define gem:format
     (lambda args
-      (apply format 
+      (apply format
              (flatten (list #t (car args) (map gem:text (map car (cadr args)) (map cdr(cadr args))))))))
 
   ;; display info text
@@ -62,6 +63,13 @@
     (gem:display (gem:text "[37m" "*")
                  (gem:text "[38;5;238m[48;5;15m" "item")
                  (gem:text "[37m" "* ")
+                 text "\n"))
+
+  ;; display help info
+  (define (gemd:help text)
+    (gem:display (gem:text "[37;1m" "%")
+                 (gem:text "[38;5;123m" "help")
+                 (gem:text "[37;1m" ">> ")
                  text "\n"))
 
   )

@@ -8,12 +8,7 @@
           type-site
           type-asset
 
-          type-hook
-          type-trigger
-          type-chain
-          type-data
-
-          type-command)
+          type-trigger)
 
   (import (scheme))
 
@@ -146,31 +141,6 @@
               (immutable source asset-source)
               (immutable target asset-target))))
 
-  ;; hook is the small data cell or execute cell
-  (module type-hook
-          [make-hook
-            hook?
-            hook-name
-            hook-type
-            hook-proc-arg proc-arg-set!
-            hook-data hook-data-set!]
-          (define-record-type
-            hook
-            (nongenerative melt-hook)
-            (fields
-              ;; hook's name
-              (immutable name hook-name)
-              ;; if the type is 'data, proc-arg contain data
-              ;; else if the type is 'proc, proc-arg is defined as following
-              (immutable type hook-type)
-              ;; proc-arg is a dot pair
-              ;; (procedure . args)
-              ;; the hook function
-              ;; the arguments, it must be wrapped in a list
-              (mutable proc-arg hook-proc-arg proc-arg-set!)
-              ;; it sotres hook data, it must be type data
-              (mutable data hook-data hook-data-set!))))
-
   ;; the trigger module for future
   (module type-trigger
           [make-trigger
@@ -184,57 +154,5 @@
               (immutable cond trigger-cond)
               (immutable act  trigger-act))))
 
-
-  ;; define the execution priority and data transform
-  (module type-chain
-          [make-chain
-            chain?
-            chain-condition condition-set!
-            chain-execution execution-set!
-            chain-data chain-data-set!]
-          (define-record-type
-            chain
-            (nongenerative melt-chain)
-            (fields
-              ;; condition must be #t or #f
-              ;; or a procedure which return #t
-              ;; or #f and accept no argument
-              (mutable condition chain-condition condition-set!)
-              ;; it is a list of procedure without arguments
-              (mutable execution chain-execution execution-set!)
-              ;; data type
-              (mutable data chain-data chain-data-set!))))
-
-  (module type-data
-          [make-data
-            data?
-            data-keys data-keys-set!
-            data-cont data-cont-set!]
-          (define-record-type
-            data
-            (nongenerative melt-data)
-            (fields
-              ;; a list of symbols
-              (mutable keys data-keys data-keys-set!)
-              ;; an assoc list which contains keys in the
-              ;; keys field
-              (mutable cont data-cont data-cont-set!))))
-
-  (module type-command
-          [make-command
-            command?
-            command-name
-            command-desc
-            command-proc]
-          (define-record-type
-            command
-            (nongenerative melt-command)
-            (fields
-              ;; symbol, which specifics string in command line
-              (immutable name command-name)
-              ;; string, one line description
-              (immutable description command-desc)
-              ;; procedure for the command, accept arguments
-              (immutable procedure command-proc))))
 
   )

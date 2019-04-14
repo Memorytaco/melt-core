@@ -10,7 +10,6 @@
           (melt data))
 
   (import type-post)
-  (import type-data)
 
   ;; accept two assoc list
   (define create-post
@@ -20,17 +19,15 @@
 
   ;; use assoc list to compose a post
   (define (compose-post meta-alist attr-alist cont-sxml)
-    (make-post (create-data (map car meta-alist)
-                            (map cdr meta-alist))
-               (create-data (map car attr-alist)
-                            (map cdr attr-alist))
+    (make-post (create-data meta-alist)
+               (create-data attr-alist)
                cont-sxml))
 
-  ;; query the data in post and return the key value pair if exists
+  ;; query the data in post and return the value if exists
   (define (post-meta-query key post)
-    (assq key (data-cont (post-meta post))))
+    (data-value-query key (post-meta post)))
 
   (define (post-attr-query key post)
-    (assq key (data-cont (post-attr post))))
+    (data-value-query key (post-attr post)))
 
   )

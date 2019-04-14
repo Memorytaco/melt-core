@@ -1,7 +1,6 @@
 (library
   (melt uutil)
   (export parse-posts
-          flatten
           get-md-attr
           get-md-title
           get-md-post-title-list
@@ -12,12 +11,9 @@
           (melt lib console)
           (melt parser markdown)
           (melt data)
+          (melt utils)
+          (melt config)
           (melt parser))
-
-  (define (flatten x)
-    (cond ((null? x) '())
-          ((pair? x) (append (flatten (car x)) (flatten (cdr x))))
-          (else (list x))))
 
   (define-syntax scone!
     (syntax-rules ()

@@ -40,9 +40,9 @@
       (if (string? ext)
           (lambda (path)
             (string=? ext (path-extension path)))
-          (gem-display (gem "[38;5;160m" "error: ")
-                       (gem "[38;5;112m" "in (melt parser): make-filter")
-                       "ext must be string!\n"))))
+          (gemd:error
+            (string-append (gem:text "[38;5;112m" "in (melt parser): make-filter")
+                           "ext must be string!")))))
 
   ;; please use this function instead of make-parser
   (define create-parser
@@ -51,9 +51,8 @@
        (if (symbol? type)
            (make-parser type proc refp)
            (begin
-             (gem-display (gem "[38;5;160m" "error: ")
-                          (gem "[38;5;112m" "in (melt parser): create-parser")
-                          "type must be symbol!\n")
+             (gemd:error (string-append (gem:text "[38;5;112m" "in (melt parser): create-parser")
+                                        "type must be symbol!"))
              (exit 1)))]
       [(type proc)
        (make-parser type proc #f)]))

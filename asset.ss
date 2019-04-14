@@ -2,7 +2,6 @@
   (export asset-cp
           asset-list-cp)
   (import (scheme)
-          (melt srfi match)
           (melt lib file)
           (melt structure))
   

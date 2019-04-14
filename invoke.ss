@@ -23,7 +23,7 @@
     (lambda (invocation)
       (let ((proc-alist (data->alist (invoke-procs invocation))))
         (do ((procs-list (map cdr (sort (lambda (pre aft)
-                                          (> (car pre) (car aft)))
+                                          (< (car pre) (car aft)))
                                         proc-alist))
                          (cdr procs-list)))
           ((null? procs-list) (void))

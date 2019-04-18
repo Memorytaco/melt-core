@@ -1,6 +1,7 @@
 (library
   (melt cell)
-  (export make-cell)
+  (export make-cell
+          eval-cell)
   (import (scheme))
 
   (define (%check-cell-proc proc)
@@ -31,5 +32,9 @@
             (set! internal-value value)
             (internal-cell upt-filter)]
            [()  ((internal-cell) internal-value)]))]))
+
+  (define (eval-cell cell value)
+    (begin (cell value)
+           (cell)))
 
   )

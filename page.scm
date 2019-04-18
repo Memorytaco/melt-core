@@ -2,16 +2,14 @@
   (melt page)
   (export create-page
           compose
-          create-writer
+          writer
           page-list-query)
   (import (scheme)
-          (melt srfi match)
           (melt parser sxml)
           (melt utils)
           (melt lib sxml)
           (melt lib file)
-          (melt asset)
-          (melt renderer)
+          (melt cell)
           (melt structure))
 
   (import type-page)
@@ -31,10 +29,13 @@
             (page-list-query key (cdr page-list)))))
 
   ;; convert the sxml to html and write it to a file
-  (define (create-writer output-file-name)
-    (lambda (sxml)
-      (let ((port (open-output-file output-file-name 'replace)))
-        (sxml->html sxml port)
-        (close-output-port port))))
+  (define writer
+    (make-cell (void)
+               (lambda (value)
+                 (lambda (sxml)
+                   (let ((port (open-output-file value 'replace)))
+                     (sxml->html sxml port)
+                     (close-output-port port)))))
+    )
 
   )

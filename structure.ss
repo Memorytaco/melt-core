@@ -2,7 +2,6 @@
   (melt structure)
   (export type-parser
           type-post
-          type-renderer
           type-page
 
           type-site
@@ -62,25 +61,6 @@
               (mutable meta post-meta post-meta-set!)
               (mutable attr post-attr post-attr-set!)
               (mutable cont post-cont post-cont-set!))))
-
-  ;; used to render the page component
-  (module type-renderer
-          [make-renderer
-            renderer?
-            renderer-type
-            renderer-proc proc-set!
-            renderer-data data-set!]
-          (define-record-type
-            renderer
-            (nongenerative melt-renderer)
-            (fields
-              ;; the type is an unique id to distinguish the render
-              (immutable type renderer-type)
-              ;; proc==>process process function used to render the
-              ;; page
-              (mutable proc renderer-proc proc-set!)
-              ;; data is the data which maybe be needed, it's the data type.
-              (mutable data renderer-data data-set!))))
 
   ;; page is used to compose one page
   ;; and use the proc to write ti to disk

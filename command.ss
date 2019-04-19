@@ -1,13 +1,11 @@
 (library
   (melt command)
   (export create-command
-          command-add!
-          command-remove!
           command-proc
           command-desc
           command-name
-          command-query
-          show-commands)
+          command-execute
+          show-command)
   (import (scheme)
           (melt data)
           (melt lib console))
@@ -20,38 +18,19 @@
     (create-data '(name desc proc)
                  `(,name ,desc ,proc)))
 
+  ;; useful utility
   (define (command-name command)
     (data-value-query 'name command))
   (define (command-desc command)
     (data-value-query 'desc command))
   (define (command-proc command)
     (data-value-query 'proc command))
+  (define (command-execute command args)
+    (apply (command-proc command) args))
 
-  ;; add one command to command data
-  (define (command-add! command data)
-    (update-data! (create-data (list (command-name command))
-                               (list command))
-                  data))
-
-  ;; remove one command in command data
-  (define (command-remove! command data)
-    (update-data! (list (command-name command)) data))
-
-  ;; query command in a data
-  (define (command-query name data)
-    (data-value-query name data))
-
-  ;; display command names and its description
-  (define (show-commands command-data)
-    (define (show-command command)
-      (format #t "  ~8a>>>   ~a~%" (symbol->string (command-name command)) (command-desc command)))
-
-      ; (gem:format "  ~10@a-->~10a~%"
-      ;             `(("[37;1m" . ,(symbol->string (command-name command)))
-      ;               ("[38;5;166m" . ,(command-desc command)))))
-
-    (do ((command-list (data-values command-data) (cdr command-list)))
-      ((null? command-list) #t)
-      (show-command (car command-list))))
+  ;; fstring the template, should contain two ~a
+  (define (show-command fstring command)
+    (format #t fstring (symbol->string (command-name command)) 
+            (command-desc command)))
 
   )

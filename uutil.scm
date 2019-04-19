@@ -12,7 +12,6 @@
           (melt parser markdown)
           (melt data)
           (melt utils)
-          (melt config)
           (melt parser))
 
   (define-syntax scone!

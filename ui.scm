@@ -35,8 +35,8 @@
     (make-cell ".melt/config.scm"
                (lambda (value)
                  (if (file-regular? value)
-                     (begin (load value) #t)
-                     #f))))
+                     (begin (load value) (melt-load ".melt/config.scm" (lambda (value) #t)))
+                     (melt-load ".melt/config.scm" (lambda (value) #f))))))
 
   ;; to structure commands
   (define list-command
@@ -51,6 +51,16 @@
             (begin
               (gemd:info "Available commands :")
               (show-commands 'inter))))))
+
+  (define execute
+    (make-cell
+      (void)
+      (lambda (value)
+        (if (melt-load)
+            (command-execute (car value) (cdr value))
+            (if (eq? (command-name (car value)) 'init)
+                (command-execute (car value) (cdr value))
+                (gemd:error "didn't load config file, make sure you are in right place."))))))
 
   ;; user interface
   (define (melt self . extra-args)
@@ -75,9 +85,9 @@
           (self-command (command-query (string->symbol (car extra-args)) 'self)))
       (cond
         [inter-command
-          (command-execute inter-command (cdr extra-args))]
+          (eval-cell execute `(,inter-command . ,(cdr extra-args)))]
         [self-command
-          (command-execute self-command (cdr extra-args))]
+          (eval-cell execute `(,self-command . ,(cdr extra-args)))]
         [else
           (gemd:error (gem:text "[38;5;99m" "Command not available!"))
           (list-command)])))

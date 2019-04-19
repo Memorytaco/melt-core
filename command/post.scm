@@ -4,7 +4,6 @@
   (import (scheme)
           (melt uutil)
           (melt lib console)
-          (melt config)
           (melt data)
           (melt cell)
           (melt command))

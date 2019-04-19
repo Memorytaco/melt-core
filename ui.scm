@@ -4,9 +4,8 @@
   (export melt)
   (import (scheme)
           (melt lib console)
-          (melt version)
+          (melt registry)
           (melt command)
-          (melt glob)
           (melt cell)
           (melt srfi match))
 
@@ -14,7 +13,7 @@
     (gemd:info (string-append
                  (gem:text "[37;1m" "melt")
                  (gem:text "[38;5;15m" " version ")
-                 (gem:text "[38;5;165m" "0.0.5-2")) ))
+                 (gem:text "[38;5;165m" (config-query 'version))) ))
 
   ;; the basic information
   (define (introduction)
@@ -26,36 +25,32 @@
   ;; basic help information
   (define (help)
     (gem:display (gem:text "[37;1m" "melt ")
-                 (gem:text "[38;5;102m" "[options] [command] [command options] \n"))
-    (gem:display (gem:text "[38;5;80m" "available options are :")
-                 (gem:text "[38;5;111m" " -h | -v | -vs | -l\n")))
+                 (gem:text "[38;5;102m" "{[options] or [subcommand]} [args] \n"))
+    (gem:display (gem:text "[38;5;80m" "options are :")
+                 (gem:text "[38;5;111m" " -h | -v | -l\n")))
+
+  ;; to load the source file
+  ;; mostly to load config file first
+  (define melt-load
+    (make-cell ".melt/config.scm"
+               (lambda (value)
+                 (if (file-regular? value)
+                     (begin (load value) #t)
+                     #f))))
 
   ;; to structure commands
-  (define prepare
+  (define list-command
     (make-cell
       #t
       (lambda (value)
-        (let ((melt-load (make-cell ".melt/config.scm"
-                                    (lambda (x)
-                                      (if (file-regular? x)
-                                          (begin (load x) #t)
-                                          (begin
-                                            (gemd:error (gem:text "[38;5;222m" "melt configure file doesn't exist!"))
-                                            #f))))))
-          (if value
-              (if (melt-load)
-                  (begin
-                    (gemd:info "Available commands :")
-                    (inter:show-commands)
-                    (user:show-commands))
-                  (begin
-                    (gemd:info "Available commands :")
-                    (inter:show-commands)))
-              (melt-load))))))
-
-  (define melt-scan (make-cell ".melt" (lambda (value) (if (file-exists? value)
-                                                           #t
-                                                           (begin (gemd:error (gem:text "[38;5;196m" "You are not in the root of working directory!")) #f)))))
+        (if (melt-load)
+            (begin
+              (gemd:info "Available commands :")
+              (show-commands 'inter)
+              (show-commands 'self))
+            (begin
+              (gemd:info "Available commands :")
+              (show-commands 'inter))))))
 
   ;; user interface
   (define (melt self . extra-args)
@@ -66,30 +61,25 @@
            [(or ("-v") ("--version"))
             (show-version)
             (exit 0)]
-           [(or ("-vs") ("--version-history"))
-            (show-version-history)
-            (exit 0)]
            [(or ("-l") ("--list"))
-            (begin (prepare #t) (prepare))
+            (list-command)
             (exit 0)]
            ['()
             (introduction)
             (exit 0)]
            [else (gemd:info "searching command ...")])
 
-    (melt-scan)
-    (prepare #f)
-    (prepare)
-
-    (let ((inter-command (inter:command-query (string->symbol (car extra-args))))
-          (user-command (user:command-query (string->symbol (car extra-args)))))
+    ;; if config file exists, just load it
+    (melt-load)
+    (let ((inter-command (command-query (string->symbol (car extra-args)) 'inter))
+          (self-command (command-query (string->symbol (car extra-args)) 'self)))
       (cond
         [inter-command
-          (apply inter-command (cdr extra-args))]
-        [user-command
-          (apply user-command (cdr extra-args))]
+          (command-execute inter-command (cdr extra-args))]
+        [self-command
+          (command-execute self-command (cdr extra-args))]
         [else
           (gemd:error (gem:text "[38;5;99m" "Command not available!"))
-          (begin (prepare #t) (prepare))])))
+          (list-command)])))
 
   )

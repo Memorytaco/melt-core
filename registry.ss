@@ -79,6 +79,7 @@
   (config-alter! 'post "post")
   (config-alter! 'public "public")
   (config-alter! 'config "melt.ss")
+  (config-alter! 'version "0.0.5-2")
 
   ;; registry command to inter
   (command-alter! init-cli 'inter)
